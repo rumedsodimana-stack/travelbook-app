@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "wejTVpT4tbQkbaT369mqq"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "bKDiGibbIS_oeKTUXROeP"
+uri = "file://artifacts/mobile/assets/images/hero_beach.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "UQ72l5ecL8KaLOUt-nHEr"
+uri = "file://artifacts/mobile/assets/images/hero_japan.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KThC-f2sX7OnA6iMjzWTY"
+uri = "file://artifacts/mobile/assets/images/hero_europe.png"
+type = "image"
+title = "generated_image"
