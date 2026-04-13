@@ -35,7 +35,7 @@ const CARD_CATEGORIES = [
 export default function PlannerScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { activePlan, isGenerating, generateItinerary, removeCard, bookAll, discardPlan } = usePlanner();
+  const { activePlan, isGenerating, generateItinerary, removeCard, updateCard, bookAll, discardPlan } = usePlanner();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : 0;
 
@@ -338,13 +338,26 @@ export default function PlannerScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionLabel, { color: colors.foreground, marginTop: 16 }]}>Your Itinerary</Text>
+        <Text style={[styles.sectionLabel, { color: colors.foreground, marginTop: 12, marginBottom: 8 }]}>
+          Your Itinerary
+        </Text>
 
         {activePlan.cards.map((card) => (
           <TravelCardView
             key={card.id}
             card={card}
             onRemove={() => removeCard(activePlan.id, card.id)}
+            onSelectAlternative={(alt) =>
+              updateCard(activePlan.id, card.id, {
+                title: alt.title,
+                subtitle: alt.subtitle,
+                provider: alt.provider,
+                price: alt.price,
+                startTime: alt.startTime,
+                endTime: alt.endTime,
+                details: alt.details,
+              })
+            }
           />
         ))}
 
