@@ -217,13 +217,21 @@ The workhorse. Renders one itinerary item. 8 types, each with its own color + ic
 - 34×34 colored icon tile + title + `date · provider` + price on the right.
 - Used in list contexts (pass detail summaries, batch lists).
 
-### Alternatives carousel
+### Alternatives — swipe-as-deck (SPEC — build this; current code has the old pattern)
 
-When `card.alternatives.length > 0`:
-- Horizontal scroll below the main card.
-- `N OPTIONS` label + "Swipe to compare" hint.
-- `AlternativeChip` — 120–180px wide, filled type color when selected, plain `colors.card` with border when not.
-- `Haptics.selectionAsync()` on switch.
+> ⚠️ **Current code still uses a chip-row carousel below the card.** That pattern is **deprecated** per [`docs/AI_PLANNER_SPEC.md § 3`](AI_PLANNER_SPEC.md#3-ux--swipe-as-deck-not-alt-chip-carousel). The next refactor of `TravelCardView` must match the spec below.
+
+When `card.alternatives.length > 0`, the **main card itself becomes the deck** — swiping it horizontally pages through alternatives in place.
+
+- **One card, one slot.** No chip row, no secondary display. The card at its existing position *becomes* the next alternative when swiped.
+- **Gesture:** horizontal pan (drag finger across the card). Use `react-native-reanimated` + `react-native-gesture-handler` `Gesture.Pan()`.
+- **Commit threshold:** past a quarter of the card width OR past a velocity threshold → commit to the next alternative. Otherwise snap back.
+- **Haptic:** `Haptics.selectionAsync()` fires exactly on commit (once per alternative change, not during the drag).
+- **Edges:** block / elastic-bounce at first and last alternative.
+- **Indicator:** dot row beneath the card (`•` current, `○` others) — one dot per alternative. Use the deck's type color for the filled dot.
+- **Count:** `[card, ...card.alternatives]` — no hardcoded cap. AI returns however many best-similar options it has; UI handles all lengths (2, 3, 10+).
+- **`onSelectAlternative(alt)`:** fires after commit, with the new card. The parent (planner screen) is responsible for calling `PlannerContext.updateCard` and triggering the timeline reflow cascade — see [`AI_PLANNER_SPEC.md § 4`](AI_PLANNER_SPEC.md#4-timeline-auto-reflow--the-cascade).
+- **Remove (×) button:** still lives on the card top-right. It removes the **entire slot** (all alternatives), not just the current one.
 
 ---
 

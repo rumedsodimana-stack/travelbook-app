@@ -81,9 +81,10 @@ The app is organized around five tabs. This is **product-locked** — do not pro
 Four interactions carry the brand. Every new feature should reinforce — not dilute — these:
 
 1. **Share a pass in the feed.** A post with an embedded Travel Pass tile. Friend taps → sees itinerary → requests to join. This is how buddy travel spreads.
-2. **AI Trip Builder.** User enters destination + dates + budget + style (budget / comfort / luxury) + interests. The app generates a complete pass with alternatives for each slot.
-3. **Swap alternatives.** Inside a pass card, swipe through alternatives (different flight options, different hotels) with a haptic tick on selection.
-4. **Secure document vault.** Passport, ID, visa stored once — auto-populated into new passes. Face-ID / PIN-gated access.
+2. **AI Trip Builder — complete, time-sensitive itinerary.** User enters destination + dates + budget + style + **purpose** + interests + optional free-text description. The AI generates the **entire trip**: visa, travel insurance, outbound flight, arrival airport transfer, hotel(s) for every night, inter-city transport, activities matched to purpose, dining reservations, events / entertainment, hotel-to-airport transfer, return flight. Every card is time-sensitive and sequenced. See [`docs/AI_PLANNER_SPEC.md`](docs/AI_PLANNER_SPEC.md).
+3. **Swipe-as-deck alternatives.** Each card in the itinerary *is* a deck of alternatives. Swipe the card horizontally to page through other options (different flight times, different hotels) in place — the same slot, same position, new content. Haptic tick on commit. No cap on how many alternatives exist.
+4. **Live timeline reflow.** Any change (swipe to alternative or × to remove) auto-adjusts every card below it on the timeline. Flight moves → transfer moves → hotel check-in moves. No overlaps, no orphans. Conflicts surface as toasts, not silent failures.
+5. **Secure document vault.** Passport, ID, visa stored once — auto-populated into new passes and visa applications. Face-ID / PIN-gated access.
 
 ---
 
@@ -148,8 +149,13 @@ Rough phase ordering. Specifics get broken out into GitHub issues as they firm u
 - `CLAUDE.md`, `PROJECT.md`, `README.md`, `docs/UI_GUIDELINES.md`, `docs/UI_COMPONENT_LIBRARY.md` all in place.
 - Dev server runs on iOS / Android / web.
 
-### Phase 1 — wiring
+### Phase 1 — planner depth + wiring
 
+- **AI Planner upgrade** per [`docs/AI_PLANNER_SPEC.md`](docs/AI_PLANNER_SPEC.md):
+  - `plannerEngine.ts` — pure timeline reflow / conflict detection.
+  - `generateItinerary` emits all 12 card slots (visa, insurance, flights both ways, both airport transfers, hotels, inter-city transport, activities, dining, events).
+  - `TravelCardView` refactored to swipe-as-deck (alt-chip carousel removed).
+  - Purpose pill + free-text fields added to planner form.
 - OpenAPI spec expanded beyond health check.
 - Drizzle schema for: users, posts, stories, passes, cards, providers, buddies.
 - AppContext + PlannerContext backed by real API.
