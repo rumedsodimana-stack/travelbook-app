@@ -1,0 +1,48 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "travelbook-mobile-web",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@workspace/mobile",
+        "exec",
+        "expo",
+        "start",
+        "--web",
+        "--port",
+        "8082"
+      ],
+      "port": 8082
+    },
+    {
+      "name": "travelbook-mobile-expo",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@workspace/mobile",
+        "exec",
+        "expo",
+        "start",
+        "--port",
+        "8083"
+      ],
+      "port": 8083
+    },
+    {
+      "name": "travelbook-api",
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": [
+        "pnpm",
+        "--filter",
+        "@workspace/api-server",
+        "run",
+        "dev"
+      ],
+      "port": 3001
+    }
+  ]
+}
