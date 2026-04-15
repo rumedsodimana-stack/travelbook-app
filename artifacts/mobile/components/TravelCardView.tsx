@@ -1,13 +1,21 @@
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  ScrollView,
+  Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useColors } from "@/hooks/useColors";
 import { TravelCard } from "@/context/PlannerContext";
 
@@ -24,14 +32,14 @@ const CARD_CONFIGS: Record<TravelCard["type"], {
   label: string;
   color: string;
 }> = {
-  flight:    { icon: "airplane",        iconSet: "ion",     label: "Flight",     color: "#1B3A5C" },
-  hotel:     { icon: "bed",             iconSet: "ion",     label: "Hotel",      color: "#0E7C7B" },
-  activity:  { icon: "map",             iconSet: "feather", label: "Activity",   color: "#E76F51" },
-  insurance: { icon: "shield-checkmark",iconSet: "ion",     label: "Insurance",  color: "#2EC4B6" },
-  visa:      { icon: "passport",        iconSet: "mci",     label: "Visa",       color: "#6B4EFF" },
-  dining:    { icon: "restaurant",      iconSet: "ion",     label: "Dining",     color: "#FF6B6B" },
-  transport: { icon: "train",           iconSet: "ion",     label: "Transport",  color: "#45B7D1" },
-  event:     { icon: "ticket",          iconSet: "mci",     label: "Event",      color: "#DDA0DD" },
+  flight:    { icon: "airplane",         iconSet: "ion",     label: "Flight",     color: "#1B3A5C" },
+  hotel:     { icon: "bed",              iconSet: "ion",     label: "Hotel",      color: "#0E7C7B" },
+  activity:  { icon: "map",              iconSet: "feather", label: "Activity",   color: "#E76F51" },
+  insurance: { icon: "shield-checkmark", iconSet: "ion",     label: "Insurance",  color: "#2EC4B6" },
+  visa:      { icon: "passport",         iconSet: "mci",     label: "Visa",       color: "#6B4EFF" },
+  dining:    { icon: "restaurant",       iconSet: "ion",     label: "Dining",     color: "#FF6B6B" },
+  transport: { icon: "train",            iconSet: "ion",     label: "Transport",  color: "#45B7D1" },
+  event:     { icon: "ticket",           iconSet: "mci",     label: "Event",      color: "#DDA0DD" },
 };
 
 function formatTime(iso: string) {
@@ -41,81 +49,61 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-function CardIcon({ type, size = 22, color = "#fff" }: { type: TravelCard["type"]; size?: number; color?: string }) {
+function CardIcon({
+  type,
+  size = 22,
+  color = "#fff",
+}: {
+  type: TravelCard["type"];
+  size?: number;
+  color?: string;
+}) {
   const cfg = CARD_CONFIGS[type];
   if (cfg.iconSet === "ion") return <Ionicons name={cfg.icon as any} size={size} color={color} />;
   if (cfg.iconSet === "mci") return <MaterialCommunityIcons name={cfg.icon as any} size={size} color={color} />;
   return <Feather name={cfg.icon as any} size={size} color={color} />;
 }
 
-function AlternativeChip({
-  alt,
-  isSelected,
-  onPress,
-}: {
-  alt: TravelCard;
-  isSelected: boolean;
-  onPress: () => void;
-}) {
-  const colors = useColors();
-  const cfg = CARD_CONFIGS[alt.type];
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      style={[
-        styles.altChip,
-        {
-          backgroundColor: isSelected ? cfg.color : colors.card,
-          borderColor: isSelected ? cfg.color : colors.border,
-          borderWidth: isSelected ? 0 : 1,
-        },
-      ]}
-    >
-      <View style={[styles.altChipIcon, { backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : cfg.color + "20" }]}>
-        <CardIcon type={alt.type} size={14} color={isSelected ? "#fff" : cfg.color} />
-      </View>
-      <View style={styles.altChipText}>
-        <Text
-          style={[styles.altChipProvider, { color: isSelected ? "#fff" : colors.foreground }]}
-          numberOfLines={1}
-        >
-          {alt.provider}
-        </Text>
-        <Text style={[styles.altChipPrice, { color: isSelected ? "rgba(255,255,255,0.85)" : colors.primary }]}>
-          ${alt.price}
-        </Text>
-      </View>
-      {isSelected && (
-        <Ionicons name="checkmark-circle" size={14} color="#fff" style={{ marginLeft: 2 }} />
-      )}
-    </TouchableOpacity>
-  );
-}
+const SCREEN_WIDTH = Dimensions.get("window").width;
+/** Horizontal drag distance required to commit to an alternative. */
+const COMMIT_THRESHOLD = SCREEN_WIDTH * 0.22;
 
 export function TravelCardView({ card, onRemove, onSelectAlternative, compact }: Props) {
   const colors = useColors();
-  const cfg = CARD_CONFIGS[card.type];
-  const [selectedAltId, setSelectedAltId] = useState<string>(card.id);
 
-  const allOptions: TravelCard[] = [card, ...(card.alternatives ?? [])];
+  // Deck = current card + its alternatives. The user swipes through this list.
+  const deck = useMemo(
+    () => [card, ...(card.alternatives ?? [])],
+    [card],
+  );
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const displayed = deck[currentIndex] ?? card;
+  const displayedCfg = CARD_CONFIGS[displayed.type];
+
+  // Gesture state — persisted across renders via Reanimated shared values.
+  const translateX = useSharedValue(0);
+
+  // When the card prop changes (e.g. parent reflowed it), reset to index 0.
+  useEffect(() => {
+    setCurrentIndex(0);
+    translateX.value = 0;
+  }, [card.id, translateX]);
+
+  const commitIndex = (next: number) => {
+    setCurrentIndex(next);
+    Haptics.selectionAsync();
+    if (onSelectAlternative && deck[next]) {
+      onSelectAlternative(deck[next]);
+    }
+  };
 
   const handleRemove = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onRemove?.();
   };
 
-  const handleSelectAlt = (alt: TravelCard) => {
-    if (alt.id === selectedAltId) return;
-    Haptics.selectionAsync();
-    setSelectedAltId(alt.id);
-    onSelectAlternative?.(alt);
-  };
-
-  // Resolve the currently displayed card (main or chosen alt)
-  const displayed = allOptions.find((o) => o.id === selectedAltId) ?? card;
-  const displayedCfg = CARD_CONFIGS[displayed.type];
-
+  // Compact mode: no swipe, just a summary row.
   if (compact) {
     return (
       <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -135,100 +123,136 @@ export function TravelCardView({ card, onRemove, onSelectAlternative, compact }:
     );
   }
 
+  const hasDeck = deck.length > 1;
+
+  // Pan gesture: drag horizontally, snap to next/prev on commit, snap back otherwise.
+  const pan = Gesture.Pan()
+    .enabled(hasDeck)
+    .activeOffsetX([-10, 10])
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+    })
+    .onEnd((e) => {
+      const dx = e.translationX;
+      if (dx < -COMMIT_THRESHOLD && currentIndex < deck.length - 1) {
+        translateX.value = withTiming(-SCREEN_WIDTH, { duration: 180 }, () => {
+          translateX.value = 0;
+          runOnJS(commitIndex)(currentIndex + 1);
+        });
+      } else if (dx > COMMIT_THRESHOLD && currentIndex > 0) {
+        translateX.value = withTiming(SCREEN_WIDTH, { duration: 180 }, () => {
+          translateX.value = 0;
+          runOnJS(commitIndex)(currentIndex - 1);
+        });
+      } else {
+        translateX.value = withSpring(0, { damping: 18, stiffness: 160 });
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
   return (
     <View style={styles.wrapper}>
-      {/* Main card */}
-      <View style={[styles.card, { backgroundColor: displayedCfg.color }]}>
-        {/* Header row */}
-        <View style={styles.cardHeader}>
-          <View style={styles.typeRow}>
-            <View style={[styles.iconBg, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
-              <CardIcon type={displayed.type} />
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.card, { backgroundColor: displayedCfg.color }, animatedStyle]}>
+          {/* Header row */}
+          <View style={styles.cardHeader}>
+            <View style={styles.typeRow}>
+              <View style={[styles.iconBg, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+                <CardIcon type={displayed.type} />
+              </View>
+              <Text style={styles.typeLabel}>{displayedCfg.label.toUpperCase()}</Text>
+              {hasDeck && (
+                <Text style={styles.counter}>
+                  {currentIndex + 1}/{deck.length}
+                </Text>
+              )}
             </View>
-            <Text style={styles.typeLabel}>{displayedCfg.label.toUpperCase()}</Text>
+            {onRemove && (
+              <TouchableOpacity onPress={handleRemove} style={styles.removeBtn}>
+                <Ionicons name="close-circle" size={22} color="rgba(255,255,255,0.65)" />
+              </TouchableOpacity>
+            )}
           </View>
-          {onRemove && (
-            <TouchableOpacity onPress={handleRemove} style={styles.removeBtn}>
-              <Ionicons name="close-circle" size={22} color="rgba(255,255,255,0.65)" />
-            </TouchableOpacity>
-          )}
-        </View>
 
-        <Text style={styles.cardTitle}>{displayed.title}</Text>
-        <Text style={styles.cardSubtitle}>{displayed.subtitle}</Text>
+          <Text style={styles.cardTitle}>{displayed.title}</Text>
+          <Text style={styles.cardSubtitle}>{displayed.subtitle}</Text>
 
-        <View style={styles.cardDivider} />
+          <View style={styles.cardDivider} />
 
-        {/* Times + price */}
-        <View style={styles.cardFooter}>
-          <View>
-            <Text style={styles.footerLabel}>
-              {displayed.type === "flight" ? "DEPARTURE" : displayed.type === "hotel" ? "CHECK-IN" : "START"}
-            </Text>
-            <Text style={styles.footerValue}>
-              {formatDate(displayed.startTime)} · {formatTime(displayed.startTime)}
-            </Text>
-          </View>
-          {displayed.endTime && (
-            <View style={styles.footerRight}>
+          {/* Times + price */}
+          <View style={styles.cardFooter}>
+            <View>
               <Text style={styles.footerLabel}>
-                {displayed.type === "hotel" ? "CHECK-OUT" : "END"}
+                {displayed.type === "flight"
+                  ? "DEPARTURE"
+                  : displayed.type === "hotel"
+                  ? "CHECK-IN"
+                  : "START"}
               </Text>
               <Text style={styles.footerValue}>
-                {formatDate(displayed.endTime)} · {formatTime(displayed.endTime)}
+                {formatDate(displayed.startTime)} · {formatTime(displayed.startTime)}
               </Text>
             </View>
-          )}
-          <View style={styles.priceTag}>
-            <Text style={styles.priceValue}>${displayed.price}</Text>
-            <Text style={styles.priceCurrency}>{displayed.currency}</Text>
-          </View>
-        </View>
-
-        {/* Detail chips */}
-        <View style={styles.detailsRow}>
-          {Object.entries(displayed.details).slice(0, 3).map(([key, val]) => (
-            <View key={key} style={styles.detail}>
-              <Text style={styles.detailKey}>{key}</Text>
-              <Text style={styles.detailVal}>{val}</Text>
+            {displayed.endTime && (
+              <View style={styles.footerRight}>
+                <Text style={styles.footerLabel}>
+                  {displayed.type === "hotel" ? "CHECK-OUT" : "END"}
+                </Text>
+                <Text style={styles.footerValue}>
+                  {formatDate(displayed.endTime)} · {formatTime(displayed.endTime)}
+                </Text>
+              </View>
+            )}
+            <View style={styles.priceTag}>
+              <Text style={styles.priceValue}>${displayed.price}</Text>
+              <Text style={styles.priceCurrency}>{displayed.currency}</Text>
             </View>
+          </View>
+
+          {/* Detail chips */}
+          <View style={styles.detailsRow}>
+            {Object.entries(displayed.details).slice(0, 3).map(([key, val]) => (
+              <View key={key} style={styles.detail}>
+                <Text style={styles.detailKey}>{key}</Text>
+                <Text style={styles.detailVal}>{val}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Provider */}
+          <View style={styles.providerRow}>
+            <Feather name="briefcase" size={11} color="rgba(255,255,255,0.55)" />
+            <Text style={styles.providerText}>{displayed.provider}</Text>
+          </View>
+        </Animated.View>
+      </GestureDetector>
+
+      {/* Dot indicator — one dot per alternative */}
+      {hasDeck && (
+        <View style={styles.dotsRow}>
+          {deck.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: i === currentIndex ? displayedCfg.color : colors.border,
+                  width: i === currentIndex ? 18 : 6,
+                },
+              ]}
+            />
           ))}
         </View>
+      )}
 
-        {/* Provider */}
-        <View style={styles.providerRow}>
-          <Feather name="briefcase" size={11} color="rgba(255,255,255,0.55)" />
-          <Text style={styles.providerText}>{displayed.provider}</Text>
-        </View>
-      </View>
-
-      {/* Alternatives carousel — only shown when alternatives exist */}
-      {allOptions.length > 1 && (
-        <View style={styles.altSection}>
-          <View style={styles.altHeader}>
-            <Text style={[styles.altTitle, { color: colors.mutedForeground }]}>
-              {allOptions.length} OPTIONS
-            </Text>
-            <Text style={[styles.altHint, { color: colors.mutedForeground }]}>
-              Swipe to compare
-            </Text>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.altList}
-            scrollEventThrottle={16}
-          >
-            {allOptions.map((opt) => (
-              <AlternativeChip
-                key={opt.id}
-                alt={opt}
-                isSelected={opt.id === selectedAltId}
-                onPress={() => handleSelectAlt(opt)}
-              />
-            ))}
-          </ScrollView>
-        </View>
+      {/* One-time hint shown on the first alternative of the deck */}
+      {hasDeck && currentIndex === 0 && (
+        <Text style={[styles.hint, { color: colors.mutedForeground }]}>
+          Swipe to compare {deck.length - 1} {deck.length - 1 === 1 ? "alternative" : "alternatives"}
+        </Text>
       )}
     </View>
   );
@@ -236,7 +260,7 @@ export function TravelCardView({ card, onRemove, onSelectAlternative, compact }:
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 6,
+    marginBottom: 10,
   },
   card: {
     borderRadius: 20,
@@ -266,6 +290,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Inter_600SemiBold",
     letterSpacing: 1.4,
+  },
+  counter: {
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    marginLeft: 4,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+    overflow: "hidden",
   },
   removeBtn: { padding: 2 },
   cardTitle: {
@@ -347,59 +382,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
   },
-
-  // Alternatives
-  altSection: {
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 8,
-  },
-  altHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 7,
-    paddingHorizontal: 2,
-  },
-  altTitle: {
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 1.0,
-  },
-  altHint: {
-    fontSize: 10,
-    fontFamily: "Inter_400Regular",
-  },
-  altList: {
-    gap: 8,
-    paddingRight: 4,
-  },
-  altChip: {
+  dotsRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    gap: 7,
-    minWidth: 120,
-    maxWidth: 180,
-  },
-  altChipIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
     justifyContent: "center",
-    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
   },
-  altChipText: { flex: 1 },
-  altChipProvider: {
-    fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
-    marginBottom: 1,
+  dot: {
+    height: 6,
+    borderRadius: 3,
   },
-  altChipPrice: {
+  hint: {
+    textAlign: "center",
     fontSize: 11,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Inter_400Regular",
+    marginTop: 6,
   },
 
   // Compact

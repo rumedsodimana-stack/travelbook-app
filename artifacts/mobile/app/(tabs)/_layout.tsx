@@ -25,7 +25,7 @@ function NativeTabLayout() {
         <Label>Planner</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="passes">
-        <Icon sf={{ default: "wallet", selected: "wallet.fill" }} />
+        <Icon sf={{ default: "wallet.pass", selected: "wallet.pass.fill" }} />
         <Label>Passes</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="account">

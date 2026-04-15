@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
-import { usePlanner, PlannerPreferences } from "@/context/PlannerContext";
+import { usePlanner, PlannerPreferences, TripPurpose } from "@/context/PlannerContext";
 import { TravelCardView } from "@/components/TravelCardView";
 
 const INTERESTS = ["Beach", "Adventure", "Culture", "Food", "Wellness", "City", "Nature", "Sports", "Nightlife"];
@@ -21,6 +21,19 @@ const TRAVEL_STYLES = [
   { key: "budget" as const, label: "Budget", icon: "wallet-outline" as const, desc: "Hostels & local eats" },
   { key: "comfort" as const, label: "Comfort", icon: "bed-outline" as const, desc: "Mid-range hotels" },
   { key: "luxury" as const, label: "Luxury", icon: "diamond-outline" as const, desc: "5-star experience" },
+];
+
+const PURPOSES: { key: TripPurpose; label: string }[] = [
+  { key: "leisure", label: "Leisure" },
+  { key: "business", label: "Business" },
+  { key: "honeymoon", label: "Honeymoon" },
+  { key: "family", label: "Family" },
+  { key: "wellness", label: "Wellness" },
+  { key: "bachelor", label: "Bachelor(ette)" },
+  { key: "adventure", label: "Adventure" },
+  { key: "culture", label: "Culture" },
+  { key: "celebration", label: "Celebration" },
+  { key: "other", label: "Other" },
 ];
 
 const CARD_CATEGORIES = [
@@ -49,6 +62,8 @@ export default function PlannerScreen() {
     travelers: 1,
     interests: [],
     travelStyle: "comfort",
+    purpose: "leisure",
+    description: "",
   });
 
   const handleGenerate = async () => {
@@ -248,6 +263,35 @@ export default function PlannerScreen() {
             ))}
           </View>
 
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>TRIP PURPOSE</Text>
+          <View style={styles.interestsGrid}>
+            {PURPOSES.map((p) => {
+              const selected = prefs.purpose === p.key;
+              return (
+                <TouchableOpacity
+                  key={p.key}
+                  style={[
+                    styles.interestChip,
+                    {
+                      backgroundColor: selected ? colors.primary : colors.muted,
+                      borderColor: selected ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setPrefs((prev) => ({ ...prev, purpose: p.key }))}
+                >
+                  <Text
+                    style={[
+                      styles.interestText,
+                      { color: selected ? "#fff" : colors.mutedForeground },
+                    ]}
+                  >
+                    {p.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>INTERESTS</Text>
           <View style={styles.interestsGrid}>
             {INTERESTS.map((interest) => {
@@ -275,6 +319,19 @@ export default function PlannerScreen() {
                 </TouchableOpacity>
               );
             })}
+          </View>
+
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>TELL ME ABOUT THIS TRIP</Text>
+          <View style={[styles.textareaBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <TextInput
+              value={prefs.description}
+              onChangeText={(v) => setPrefs((p) => ({ ...p, description: v }))}
+              placeholder={"e.g. 7-day anniversary trip, love seafood and quiet beaches, want one big splurge dinner"}
+              placeholderTextColor={colors.mutedForeground}
+              multiline
+              textAlignVertical="top"
+              style={[styles.textarea, { color: colors.foreground }]}
+            />
           </View>
 
           <TouchableOpacity
@@ -354,7 +411,7 @@ export default function PlannerScreen() {
                 provider: alt.provider,
                 price: alt.price,
                 startTime: alt.startTime,
-                endTime: alt.endTime,
+                endTime: alt.endTime ?? card.endTime,
                 details: alt.details,
               })
             }
@@ -582,5 +639,18 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Inter_700Bold",
+  },
+  textareaBox: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    minHeight: 96,
+    marginBottom: 6,
+  },
+  textarea: {
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    minHeight: 70,
+    lineHeight: 22,
   },
 });
