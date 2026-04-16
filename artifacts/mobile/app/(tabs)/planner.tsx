@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,8 +14,14 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
-import { usePlanner, PlannerPreferences, TripPurpose } from "@/context/PlannerContext";
+import {
+  usePlanner,
+  PlannerPreferences,
+  TripPurpose,
+  CardType,
+} from "@/context/PlannerContext";
 import { TravelCardView } from "@/components/TravelCardView";
+import { ConflictToast } from "@/components/ConflictToast";
 
 const INTERESTS = ["Beach", "Adventure", "Culture", "Food", "Wellness", "City", "Nature", "Sports", "Nightlife"];
 const TRAVEL_STYLES = [
@@ -48,11 +55,12 @@ const CARD_CATEGORIES = [
 export default function PlannerScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { activePlan, isGenerating, generateItinerary, removeCard, updateCard, bookAll, discardPlan } = usePlanner();
+  const { activePlan, isGenerating, generateItinerary, removeCard, updateCard, bookAll, discardPlan, conflicts } = usePlanner();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : 0;
 
   const [step, setStep] = useState<"start" | "prefs" | "generating" | "result">("start");
+  const [manualCategory, setManualCategory] = useState<CardType | null>(null);
   const [prefs, setPrefs] = useState<Partial<PlannerPreferences>>({
     destination: "",
     startDate: "2026-06-01",
@@ -92,47 +100,59 @@ export default function PlannerScreen() {
 
   if (step === "start") {
     return (
-      <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={{ paddingTop: topPad + 10, paddingBottom: botPad + 90 }}
-      >
-        <View style={styles.header}>
-          <Text style={[styles.heading, { color: colors.foreground }]}>Trip Planner</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.aiCard, { backgroundColor: colors.primary }]}
-          onPress={() => setStep("prefs")}
-          activeOpacity={0.88}
+      <>
+        <ScrollView
+          style={[styles.container, { backgroundColor: colors.background }]}
+          contentContainerStyle={{ paddingTop: topPad + 10, paddingBottom: botPad + 90 }}
         >
-          <View style={styles.aiCardContent}>
-            <View style={[styles.aiIcon, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
-              <MaterialCommunityIcons name="robot-excited" size={28} color="#fff" />
-            </View>
-            <View style={styles.aiText}>
-              <Text style={styles.aiTitle}>AI Trip Builder</Text>
-              <Text style={styles.aiDesc}>Generate a full itinerary with flights, hotels, activities & more</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={22} color="rgba(255,255,255,0.8)" />
+          <View style={styles.header}>
+            <Text style={[styles.heading, { color: colors.foreground }]}>Trip Planner</Text>
           </View>
-        </TouchableOpacity>
 
-        <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Book Manually</Text>
-        <View style={styles.categoryGrid}>
-          {CARD_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.type}
-              style={[styles.catBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.catIcon, { backgroundColor: colors.muted }]}>
-                <Ionicons name={cat.icon as any} size={22} color={colors.primary} />
+          <TouchableOpacity
+            style={[styles.aiCard, { backgroundColor: colors.primary }]}
+            onPress={() => setStep("prefs")}
+            activeOpacity={0.88}
+          >
+            <View style={styles.aiCardContent}>
+              <View style={[styles.aiIcon, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+                <MaterialCommunityIcons name="robot-excited" size={28} color="#fff" />
               </View>
-              <Text style={[styles.catLabel, { color: colors.foreground }]}>{cat.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+              <View style={styles.aiText}>
+                <Text style={styles.aiTitle}>AI Trip Builder</Text>
+                <Text style={styles.aiDesc}>Generate a full itinerary with flights, hotels, activities & more</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="rgba(255,255,255,0.8)" />
+            </View>
+          </TouchableOpacity>
+
+          <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Book Manually</Text>
+          <View style={styles.categoryGrid}>
+            {CARD_CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.type}
+                style={[styles.catBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                activeOpacity={0.8}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setManualCategory(cat.type);
+                }}
+              >
+                <View style={[styles.catIcon, { backgroundColor: colors.muted }]}>
+                  <Ionicons name={cat.icon as any} size={22} color={colors.primary} />
+                </View>
+                <Text style={[styles.catLabel, { color: colors.foreground }]}>{cat.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        <ManualCategoryModal
+          category={manualCategory}
+          onClose={() => setManualCategory(null)}
+          colors={colors}
+        />
+      </>
     );
   }
 
@@ -364,7 +384,9 @@ export default function PlannerScreen() {
 
   if (activePlan && step === "result") {
     return (
-      <ScrollView
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <ConflictToast conflicts={conflicts} />
+        <ScrollView
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingTop: topPad + 10, paddingBottom: botPad + 90 }}
       >
@@ -394,6 +416,18 @@ export default function PlannerScreen() {
             </View>
           </View>
         </View>
+
+        {activePlan.aiNotes && (
+          <View style={[styles.aiNotesCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.aiNotesHeader}>
+              <View style={[styles.aiNotesIcon, { backgroundColor: colors.primary }]}>
+                <MaterialCommunityIcons name="robot-excited" size={16} color="#fff" />
+              </View>
+              <Text style={[styles.aiNotesLabel, { color: colors.foreground }]}>AI Insights</Text>
+            </View>
+            <Text style={[styles.aiNotesBody, { color: colors.mutedForeground }]}>{activePlan.aiNotes}</Text>
+          </View>
+        )}
 
         <Text style={[styles.sectionLabel, { color: colors.foreground, marginTop: 12, marginBottom: 8 }]}>
           Your Itinerary
@@ -426,11 +460,196 @@ export default function PlannerScreen() {
           <Text style={styles.bookBtnText}>Confirm & Create Travel Pass</Text>
         </TouchableOpacity>
       </ScrollView>
+      </View>
     );
   }
 
   return null;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Manual category modal — search & add a single card type
+// ─────────────────────────────────────────────────────────────
+
+const MANUAL_CATEGORY_LABELS: Record<CardType, { label: string; placeholder: string; icon: string; color: string }> = {
+  flight: { label: "Find a Flight", placeholder: "From airport, to destination, dates", icon: "airplane", color: "#1B3A5C" },
+  hotel: { label: "Book a Hotel", placeholder: "Destination, check-in & check-out", icon: "bed", color: "#0E7C7B" },
+  activity: { label: "Add an Activity", placeholder: "Tour, experience, sport, class", icon: "map", color: "#E76F51" },
+  dining: { label: "Reserve Dining", placeholder: "Restaurant, cuisine, vibe", icon: "restaurant", color: "#FF6B6B" },
+  insurance: { label: "Add Insurance", placeholder: "Coverage type, dates", icon: "shield-checkmark", color: "#2EC4B6" },
+  visa: { label: "Apply for Visa", placeholder: "Country, visa type", icon: "passport", color: "#6B4EFF" },
+  transport: { label: "Add Transport", placeholder: "Train, bus, transfer", icon: "train", color: "#45B7D1" },
+  event: { label: "Book an Event", placeholder: "Concert, festival, match", icon: "ticket", color: "#DDA0DD" },
+};
+
+const MOCK_RESULTS_BY_CATEGORY: Record<CardType, { id: string; title: string; provider: string; price: number; subtitle: string }[]> = {
+  flight: [
+    { id: "ml_f1", title: "JFK → LHR", provider: "British Airways", price: 720, subtitle: "Economy · Non-stop · 7h" },
+    { id: "ml_f2", title: "JFK → CDG", provider: "Air France", price: 690, subtitle: "Economy+ · Non-stop · 7h 30m" },
+    { id: "ml_f3", title: "LAX → NRT", provider: "ANA", price: 1080, subtitle: "Economy · Non-stop · 11h" },
+  ],
+  hotel: [
+    { id: "ml_h1", title: "The Standard, NYC", provider: "Standard Hotels", price: 480, subtitle: "Standard Room · 2 nights" },
+    { id: "ml_h2", title: "Park Hyatt Paris-Vendôme", provider: "Park Hyatt", price: 1200, subtitle: "Deluxe Room · 3 nights" },
+    { id: "ml_h3", title: "The Hoxton, Shoreditch", provider: "The Hoxton", price: 320, subtitle: "Cosy Room · 2 nights" },
+  ],
+  activity: [
+    { id: "ml_a1", title: "Eiffel Tower Skip-the-Line", provider: "Paris City Vision", price: 65, subtitle: "Guided · 2h" },
+    { id: "ml_a2", title: "Bali Cooking Class", provider: "Ubud Local Guides", price: 75, subtitle: "Hands-on · Half day" },
+    { id: "ml_a3", title: "Iceland Glacier Hike", provider: "Arctic Adventures", price: 145, subtitle: "Day trip · Full day" },
+  ],
+  dining: [
+    { id: "ml_d1", title: "Sushi Saito (Tokyo)", provider: "Saito", price: 380, subtitle: "Omakase · 17 courses" },
+    { id: "ml_d2", title: "Septime (Paris)", provider: "Bertrand Grébaut", price: 165, subtitle: "Tasting menu · 5 courses" },
+    { id: "ml_d3", title: "Ottolenghi (London)", provider: "Ottolenghi", price: 90, subtitle: "Tasting menu · 4 courses" },
+  ],
+  insurance: [
+    { id: "ml_i1", title: "WorldNomads Standard", provider: "WorldNomads", price: 89, subtitle: "Comprehensive · 14 days" },
+    { id: "ml_i2", title: "Allianz Premium", provider: "Allianz", price: 145, subtitle: "Premium · 14 days" },
+    { id: "ml_i3", title: "SafeTrip Basic", provider: "SafeTrip", price: 49, subtitle: "Basic · 14 days" },
+  ],
+  visa: [
+    { id: "ml_v1", title: "Schengen Visa", provider: "TravelBook Visa", price: 80, subtitle: "Multi-entry · 90 days" },
+    { id: "ml_v2", title: "UK Visitor Visa", provider: "TravelBook Visa", price: 130, subtitle: "6 months" },
+    { id: "ml_v3", title: "Japan eVisa", provider: "TravelBook Visa", price: 35, subtitle: "Single entry · 30 days" },
+  ],
+  transport: [
+    { id: "ml_t1", title: "Eurostar London ↔ Paris", provider: "Eurostar", price: 220, subtitle: "Standard Premier · 2h 20m" },
+    { id: "ml_t2", title: "Tokyo Metro 7-Day Pass", provider: "Tokyo Metro", price: 25, subtitle: "Unlimited · 7 days" },
+    { id: "ml_t3", title: "Airport Private Transfer", provider: "TravelBook Transfers", price: 65, subtitle: "Sedan · 60 min" },
+  ],
+  event: [
+    { id: "ml_e1", title: "Premier League Match", provider: "Ticketmaster", price: 180, subtitle: "Premium seating" },
+    { id: "ml_e2", title: "Glastonbury Festival", provider: "Glastonbury", price: 380, subtitle: "Full festival pass" },
+    { id: "ml_e3", title: "Royal Opera House", provider: "ROH", price: 220, subtitle: "Stalls · 1 night" },
+  ],
+};
+
+function ManualCategoryModal({
+  category,
+  onClose,
+  colors,
+}: {
+  category: CardType | null;
+  onClose: () => void;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [query, setQuery] = useState("");
+  if (!category) return null;
+  const cfg = MANUAL_CATEGORY_LABELS[category];
+  const results = MOCK_RESULTS_BY_CATEGORY[category];
+  const filtered = query.trim()
+    ? results.filter((r) => `${r.title} ${r.provider} ${r.subtitle}`.toLowerCase().includes(query.toLowerCase()))
+    : results;
+
+  return (
+    <Modal visible={!!category} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={[manualStyles.container, { backgroundColor: colors.background }]}>
+        <View style={[manualStyles.header, { borderBottomColor: colors.border }]}>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={24} color={colors.foreground} />
+          </TouchableOpacity>
+          <Text style={[manualStyles.title, { color: colors.foreground }]}>{cfg.label}</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        <View style={{ padding: 16 }}>
+          <View style={[manualStyles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Feather name="search" size={18} color={colors.mutedForeground} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={cfg.placeholder}
+              placeholderTextColor={colors.mutedForeground}
+              style={[manualStyles.searchInput, { color: colors.foreground }]}
+            />
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30, gap: 10 }}>
+          {filtered.map((r) => (
+            <TouchableOpacity
+              key={r.id}
+              style={[manualStyles.result, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                onClose();
+              }}
+            >
+              <View style={[manualStyles.resultIcon, { backgroundColor: cfg.color }]}>
+                <Ionicons name={cfg.icon as any} size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[manualStyles.resultTitle, { color: colors.foreground }]}>{r.title}</Text>
+                <Text style={[manualStyles.resultSub, { color: colors.mutedForeground }]}>
+                  {r.provider} · {r.subtitle}
+                </Text>
+              </View>
+              <Text style={[manualStyles.resultPrice, { color: colors.primary }]}>${r.price}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+const manualStyles = StyleSheet.create({
+  container: { flex: 1 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  title: {
+    fontSize: 17,
+    fontFamily: "Inter_600SemiBold",
+  },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+  },
+  result: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 12,
+  },
+  resultIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  resultTitle: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+  },
+  resultSub: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    marginTop: 2,
+  },
+  resultPrice: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -639,6 +858,35 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Inter_700Bold",
+  },
+  aiNotesCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  aiNotesHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  aiNotesIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  aiNotesLabel: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
+  aiNotesBody: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 19,
   },
   textareaBox: {
     borderRadius: 14,

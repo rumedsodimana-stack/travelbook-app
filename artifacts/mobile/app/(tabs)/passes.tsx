@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
-import { usePlanner, TravelPass } from "@/context/PlannerContext";
+import { useNow, cardLifecycle, formatDuration } from "@/hooks/useNow";
+import { usePlanner, TravelPass, TravelCard } from "@/context/PlannerContext";
 import { PassCard } from "@/components/PassCard";
 import { TravelCardView } from "@/components/TravelCardView";
 
@@ -20,13 +21,26 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString([], { weekday: "short", month: "long", day: "numeric" });
 }
 
+/** Find the next card that hasn't started yet (or is currently active). */
+function findNextUpCard(cards: TravelCard[], now: Date): TravelCard | null {
+  const sorted = [...cards].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  // Prefer an "active" card; else the soonest "soon"/"future" card.
+  const active = sorted.find((c) => cardLifecycle(c.startTime, c.endTime, now) === "active");
+  if (active) return active;
+  return sorted.find((c) => new Date(c.startTime).getTime() > now.getTime()) ?? null;
+}
+
 export default function PassesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const now = useNow();
   const { passes, sharePass, archivePass, requestJoinTrip } = usePlanner();
   const [selectedPass, setSelectedPass] = useState<TravelPass | null>(null);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : 0;
+
+  const nextUp = selectedPass ? findNextUpCard(selectedPass.cards, now) : null;
+  const nextUpMs = nextUp ? new Date(nextUp.startTime).getTime() - now.getTime() : 0;
 
   const upcoming = passes.filter((p) => p.status === "upcoming");
   const active = passes.filter((p) => p.status === "active");
@@ -164,6 +178,39 @@ export default function PassesScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+
+              {nextUp && (
+                <View style={[styles.nextUpBanner, { backgroundColor: colors.primary }]}>
+                  <View style={styles.nextUpHeaderRow}>
+                    <View style={styles.nextUpLabelRow}>
+                      <View style={styles.nextUpDot} />
+                      <Text style={styles.nextUpLabel}>
+                        {nextUpMs <= 0 ? "HAPPENING NOW" : "NEXT UP"}
+                      </Text>
+                    </View>
+                    {nextUpMs > 0 && (
+                      <View style={styles.nextUpCountdown}>
+                        <Ionicons name="time-outline" size={12} color="#fff" />
+                        <Text style={styles.nextUpCountdownText}>in {formatDuration(nextUpMs)}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.nextUpTitle} numberOfLines={1}>
+                    {nextUp.title}
+                  </Text>
+                  <Text style={styles.nextUpSubtitle} numberOfLines={1}>
+                    {nextUp.subtitle}
+                  </Text>
+                  {nextUpMs <= 6 * 3600 * 1000 && nextUpMs > 0 && (
+                    <Text style={styles.nextUpAdvice}>
+                      {nextUp.type === "flight" ? "Time to head to the airport" :
+                       nextUp.type === "transport" ? "Pickup is approaching — check the meeting point" :
+                       nextUp.type === "hotel" ? "Check-in is coming up" :
+                       "Your next experience is starting soon"}
+                    </Text>
+                  )}
+                </View>
+              )}
 
               <Text style={[styles.itineraryLabel, { color: colors.foreground }]}>Itinerary</Text>
               {selectedPass.cards.length === 0 ? (
@@ -303,5 +350,67 @@ const styles = StyleSheet.create({
   emptyCardsText: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
+  },
+  nextUpBanner: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
+  },
+  nextUpHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  nextUpLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  nextUpDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#fff",
+  },
+  nextUpLabel: {
+    color: "rgba(255,255,255,0.95)",
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.2,
+  },
+  nextUpCountdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  nextUpCountdownText: {
+    color: "#fff",
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  nextUpTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+    marginTop: 2,
+  },
+  nextUpSubtitle: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    marginTop: 2,
+  },
+  nextUpAdvice: {
+    color: "rgba(255,255,255,0.95)",
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    marginTop: 8,
+    fontStyle: "italic",
   },
 });

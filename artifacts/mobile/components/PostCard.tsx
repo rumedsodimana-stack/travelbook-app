@@ -9,6 +9,8 @@ interface Props {
   post: Post;
   onLike: () => void;
   onPassPress?: () => void;
+  onComment?: () => void;
+  onShare?: () => void;
 }
 
 const AVATAR_COLORS = [
@@ -32,7 +34,7 @@ function timeAgo(isoDate: string): string {
   return `${days}d`;
 }
 
-export function PostCard({ post, onLike, onPassPress }: Props) {
+export function PostCard({ post, onLike, onPassPress, onComment, onShare }: Props) {
   const colors = useColors();
   const avatarColor = getAvatarColor(post.authorName);
   const initials = post.authorName
@@ -119,7 +121,7 @@ export function PostCard({ post, onLike, onPassPress }: Props) {
             {post.likes}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.action}>
+        <TouchableOpacity style={styles.action} onPress={onComment}>
           <Feather name="message-circle" size={19} color={colors.mutedForeground} />
           <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>
             {post.comments}
@@ -131,7 +133,7 @@ export function PostCard({ post, onLike, onPassPress }: Props) {
             <Text style={[styles.actionCount, { color: colors.primary }]}>Join</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.action}>
+        <TouchableOpacity style={styles.action} onPress={onShare}>
           <Feather name="send" size={18} color={colors.mutedForeground} />
         </TouchableOpacity>
       </View>

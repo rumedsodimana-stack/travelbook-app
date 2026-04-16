@@ -13,6 +13,7 @@ import {
   totalCost,
   type Conflict,
 } from "./plannerEngine";
+import { fetchAiSuggestions } from "@/lib/aiPlanner";
 
 export type CardType =
   | "flight"
@@ -68,6 +69,10 @@ export interface TravelPass {
   createdAt: string;
   totalCost: number;
   currency: string;
+  /** Optional natural-language insights from the LLM (api-server /v1/plan). */
+  aiNotes?: string;
+  /** Source of the itinerary: "scripted" (default) or "llm-augmented". */
+  aiSource?: "scripted" | "llm-augmented";
 }
 
 export interface PlannerPreferences {
@@ -911,7 +916,14 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
 
   const generateItinerary = useCallback(async (prefs: PlannerPreferences) => {
     setIsGenerating(true);
-    await new Promise((r) => setTimeout(r, 2500));
+
+    // Kick off the scripted itinerary build immediately, and the LLM call in
+    // parallel. The scripted result is the source of truth for the cards;
+    // the LLM result is appended as `aiNotes` if it succeeds.
+    const [_, ai] = await Promise.all([
+      new Promise((r) => setTimeout(r, 2500)), // pacing — feels like real generation
+      fetchAiSuggestions(prefs),
+    ]);
 
     const cards = buildFullItinerary(prefs);
     const ts = Date.now();
@@ -929,6 +941,8 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
       totalCost: totalCost(cards),
       currency: prefs.currency,
       cards,
+      aiNotes: ai.source === "llm" && ai.suggestions ? ai.suggestions : undefined,
+      aiSource: ai.source === "llm" ? "llm-augmented" : "scripted",
     };
 
     setActivePlan(newPass);

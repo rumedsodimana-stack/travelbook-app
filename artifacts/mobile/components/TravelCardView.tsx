@@ -17,6 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useColors } from "@/hooks/useColors";
+import { useNow, cardLifecycle, formatDuration } from "@/hooks/useNow";
 import { TravelCard } from "@/context/PlannerContext";
 
 interface Props {
@@ -70,6 +71,7 @@ const COMMIT_THRESHOLD = SCREEN_WIDTH * 0.22;
 
 export function TravelCardView({ card, onRemove, onSelectAlternative, compact }: Props) {
   const colors = useColors();
+  const now = useNow();
 
   // Deck = current card + its alternatives. The user swipes through this list.
   const deck = useMemo(
@@ -80,6 +82,11 @@ export function TravelCardView({ card, onRemove, onSelectAlternative, compact }:
   const [currentIndex, setCurrentIndex] = useState(0);
   const displayed = deck[currentIndex] ?? card;
   const displayedCfg = CARD_CONFIGS[displayed.type];
+
+  // Lifecycle drives visual state — past cards dim, active cards get a LIVE pulse,
+  // soon cards show a countdown. Refreshes via useNow.
+  const lifecycle = cardLifecycle(displayed.startTime, displayed.endTime, now);
+  const msUntilStart = new Date(displayed.startTime).getTime() - now.getTime();
 
   // Gesture state — persisted across renders via Reanimated shared values.
   const translateX = useSharedValue(0);
@@ -156,7 +163,13 @@ export function TravelCardView({ card, onRemove, onSelectAlternative, compact }:
   return (
     <View style={styles.wrapper}>
       <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.card, { backgroundColor: displayedCfg.color }, animatedStyle]}>
+        <Animated.View
+          style={[
+            styles.card,
+            { backgroundColor: displayedCfg.color, opacity: lifecycle === "past" ? 0.5 : 1 },
+            animatedStyle,
+          ]}
+        >
           {/* Header row */}
           <View style={styles.cardHeader}>
             <View style={styles.typeRow}>
@@ -168,6 +181,24 @@ export function TravelCardView({ card, onRemove, onSelectAlternative, compact }:
                 <Text style={styles.counter}>
                   {currentIndex + 1}/{deck.length}
                 </Text>
+              )}
+              {lifecycle === "active" && (
+                <View style={styles.liveBadge}>
+                  <View style={styles.livePulseDot} />
+                  <Text style={styles.liveBadgeText}>LIVE</Text>
+                </View>
+              )}
+              {lifecycle === "past" && (
+                <View style={styles.completedBadge}>
+                  <Ionicons name="checkmark" size={10} color="#fff" />
+                  <Text style={styles.liveBadgeText}>DONE</Text>
+                </View>
+              )}
+              {lifecycle === "soon" && msUntilStart > 0 && (
+                <View style={styles.soonBadge}>
+                  <Ionicons name="time-outline" size={10} color="#fff" />
+                  <Text style={styles.liveBadgeText}>IN {formatDuration(msUntilStart).toUpperCase()}</Text>
+                </View>
               )}
             </View>
             {onRemove && (
@@ -301,6 +332,48 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 10,
     overflow: "hidden",
+  },
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginLeft: 4,
+    backgroundColor: "#10b981",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  completedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginLeft: 4,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  soonBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginLeft: 4,
+    backgroundColor: "#F4A261",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  livePulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#fff",
+  },
+  liveBadgeText: {
+    color: "#fff",
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.6,
   },
   removeBtn: { padding: 2 },
   cardTitle: {

@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { useNow, formatDuration } from "@/hooks/useNow";
 import { TravelPass } from "@/context/PlannerContext";
 
 interface Props {
@@ -18,9 +19,14 @@ function formatDateRange(start: string, end: string): string {
   return `${s.toLocaleDateString([], opts)} – ${e.toLocaleDateString([], opts)}, ${e.getFullYear()}`;
 }
 
-function getDaysLeft(startDate: string): number {
-  const diff = new Date(startDate).getTime() - Date.now();
-  return Math.ceil(diff / 86400000);
+// Live countdown helper: returns remaining ms until startDate, refreshed by useNow().
+function msUntil(startDate: string, now: Date): number {
+  return new Date(startDate).getTime() - now.getTime();
+}
+
+function isOngoing(startDate: string, endDate: string, now: Date): boolean {
+  const t = now.getTime();
+  return t >= new Date(startDate).getTime() && t <= new Date(endDate).getTime();
 }
 
 function getCardTypeCounts(cards: TravelPass["cards"]): string {
@@ -47,8 +53,10 @@ function getPassColor(id: string): string {
 
 export function PassCard({ pass, onPress, onShare }: Props) {
   const colors = useColors();
+  const now = useNow(); // refreshes every minute — drives live countdown + ongoing badge
   const passColor = getPassColor(pass.id);
-  const daysLeft = getDaysLeft(pass.startDate);
+  const remainingMs = msUntil(pass.startDate, now);
+  const ongoing = isOngoing(pass.startDate, pass.endDate, now);
   const status = STATUS_CONFIG[pass.status];
 
   const handleShare = () => {
@@ -64,11 +72,12 @@ export function PassCard({ pass, onPress, onShare }: Props) {
     >
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.statusBadge, { backgroundColor: status.color }]}>
-            <Text style={styles.statusText}>{status.label}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: ongoing ? "#10b981" : status.color }]}>
+            {ongoing && <View style={styles.livePulse} />}
+            <Text style={styles.statusText}>{ongoing ? "LIVE NOW" : status.label}</Text>
           </View>
-          {pass.status === "upcoming" && daysLeft > 0 && (
-            <Text style={styles.daysLeft}>{daysLeft}d away</Text>
+          {pass.status === "upcoming" && !ongoing && remainingMs > 0 && (
+            <Text style={styles.daysLeft}>{formatDuration(remainingMs)} away</Text>
           )}
         </View>
         <View style={styles.headerRight}>
@@ -143,9 +152,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 20,
+  },
+  livePulse: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#fff",
   },
   statusText: {
     color: "#fff",
