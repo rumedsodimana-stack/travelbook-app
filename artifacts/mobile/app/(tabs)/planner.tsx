@@ -471,7 +471,8 @@ export default function PlannerScreen() {
 // Manual category modal — search & add a single card type
 // ─────────────────────────────────────────────────────────────
 
-const MANUAL_CATEGORY_LABELS: Record<CardType, { label: string; placeholder: string; icon: string; color: string }> = {
+type ManualCategoryConfig = { label: string; placeholder: string; icon: string; color: string };
+const MANUAL_CATEGORY_LABELS: Record<CardType, ManualCategoryConfig> = {
   flight: { label: "Find a Flight", placeholder: "From airport, to destination, dates", icon: "airplane", color: "#1B3A5C" },
   hotel: { label: "Book a Hotel", placeholder: "Destination, check-in & check-out", icon: "bed", color: "#0E7C7B" },
   activity: { label: "Add an Activity", placeholder: "Tour, experience, sport, class", icon: "map", color: "#E76F51" },
@@ -482,7 +483,8 @@ const MANUAL_CATEGORY_LABELS: Record<CardType, { label: string; placeholder: str
   event: { label: "Book an Event", placeholder: "Concert, festival, match", icon: "ticket", color: "#DDA0DD" },
 };
 
-const MOCK_RESULTS_BY_CATEGORY: Record<CardType, { id: string; title: string; provider: string; price: number; subtitle: string }[]> = {
+type ManualResult = { id: string; title: string; provider: string; price: number; subtitle: string };
+const MOCK_RESULTS_BY_CATEGORY: Record<CardType, ManualResult[]> = {
   flight: [
     { id: "ml_f1", title: "JFK → LHR", provider: "British Airways", price: 720, subtitle: "Economy · Non-stop · 7h" },
     { id: "ml_f2", title: "JFK → CDG", provider: "Air France", price: 690, subtitle: "Economy+ · Non-stop · 7h 30m" },
