@@ -1008,12 +1008,17 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
     const targetPass = passId === activePlan?.id ? activePlan : passes.find((p) => p.id === passId);
     if (!targetPass) return;
 
-    // Compile the final pass: recompute totalCost from the (potentially reflowed) cards,
-    // ensure status is upcoming, and supply coverImage fallback if none was set.
+    // Compile the final pass: lock in the chosen cards, strip alternatives (booking is
+    // final — swipe-to-compare is a planner-only feature), recompute totalCost.
+    const lockedCards = targetPass.cards.map(({ alternatives, ...card }) => ({
+      ...card,
+      status: "confirmed" as const,
+    }));
     const bookedPass: TravelPass = {
       ...targetPass,
       status: "upcoming",
-      totalCost: totalCost(targetPass.cards),
+      cards: lockedCards,
+      totalCost: totalCost(lockedCards),
       coverImage: targetPass.coverImage ?? "",
     };
 
