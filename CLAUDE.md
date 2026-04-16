@@ -126,11 +126,13 @@ Full rules: [`docs/UI_GUIDELINES.md`](docs/UI_GUIDELINES.md).
 
 Before you create any new file in `artifacts/mobile/`, check if it already exists:
 
-1. **Components** → [`artifacts/mobile/components/`](artifacts/mobile/components/) — `PostCard`, `StoryBubble`, `ExploreCard`, `PassCard`, `TravelCardView`, `ErrorBoundary`, `ErrorFallback`, `KeyboardAwareScrollViewCompat`.
-2. **State** → [`artifacts/mobile/context/`](artifacts/mobile/context/) — `AppContext` (user, posts, stories, documents) and `PlannerContext` (passes, plan generation, card CRUD). If your feature needs user, posts, passes, or cards — use these; do not fork.
-3. **Hooks** → [`artifacts/mobile/hooks/`](artifacts/mobile/hooks/) — `useColors`. Add new hooks here, next to `useColors.ts`, never inline in a screen.
-4. **Constants** → [`artifacts/mobile/constants/`](artifacts/mobile/constants/) — `colors.ts`. Add new tokens here, never in-line.
-5. **Routes** → [`artifacts/mobile/app/`](artifacts/mobile/app/) — one file per route. `(tabs)/` is the tab group. Modals and detail screens go at the root of `app/` as separate routes.
+1. **Components** → [`artifacts/mobile/components/`](artifacts/mobile/components/) — `PostCard`, `StoryBubble`, `ExploreCard`, `PassCard`, `TravelCardView`, `ConflictToast`, `ErrorBoundary`, `ErrorFallback`, `KeyboardAwareScrollViewCompat`.
+2. **State** → [`artifacts/mobile/context/`](artifacts/mobile/context/) — `AppContext` (user, posts, stories, documents) and `PlannerContext` (passes, plan generation, card CRUD, conflicts). If your feature needs user, posts, passes, or cards — use these; do not fork.
+3. **Engine** → [`artifacts/mobile/context/plannerEngine.ts`](artifacts/mobile/context/plannerEngine.ts) — pure TS timeline logic. `reflowCards`, `removeCardAndReflow`, `detectConflicts`, `totalCost`. No RN deps — unit-testable.
+4. **Hooks** → [`artifacts/mobile/hooks/`](artifacts/mobile/hooks/) — `useColors`, `useNow`. Add new hooks here, never inline in a screen.
+5. **Lib** → [`artifacts/mobile/lib/`](artifacts/mobile/lib/) — `aiPlanner.ts` (client adapter for LLM endpoint). Add new client adapters here.
+6. **Constants** → [`artifacts/mobile/constants/`](artifacts/mobile/constants/) — `colors.ts`. Add new tokens here, never in-line.
+7. **Routes** → [`artifacts/mobile/app/`](artifacts/mobile/app/) — one file per route. `(tabs)/` is the tab group. Modals and detail screens go at the root of `app/` as separate routes.
 
 If something similar already exists → **extend it, do not duplicate**. Duplication is the #1 risk in a fast-moving monorepo.
 

@@ -198,10 +198,12 @@ This part mostly works today; the spec just clarifies behavior.
    - `travelBuddyRequests: 0`.
    - `totalCost`: sum of all card `price` fields.
    - `coverImage`: auto-selected based on destination (TBD — for now, use a deterministic color from the title).
+   - **`alternatives` are STRIPPED from every card.** Each card's `status` is set to `"confirmed"`. The pass becomes read-only.
 4. Inserted into `passes[]` state and persisted to `AsyncStorage.travelbook_passes`.
 5. `activePlan` cleared.
 6. User is navigated to the **Passes tab** — which is the source of truth from then on.
-7. In Phase 6 (backend): `bookAll` also fires provider bookings, captures payment, sends confirmation emails.
+7. **Booked passes are read-only.** In the Passes tab detail modal, `TravelCardView` receives NO `onRemove` and NO `onSelectAlternative`. Since alternatives were stripped in step 3, there is no swipe gesture, no × button, no dot indicator. The cards show their confirmed state only. This is a **non-negotiable product rule** — swipe-to-compare is a planner-only feature.
+8. In Phase 6 (backend): `bookAll` also fires provider bookings, captures payment, sends confirmation emails.
 
 ---
 

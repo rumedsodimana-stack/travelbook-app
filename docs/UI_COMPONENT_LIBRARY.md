@@ -14,7 +14,8 @@ Extracted from the prototype at `artifacts/mobile/`. Every component listed here
 | `PostCard` | [components/PostCard.tsx](../artifacts/mobile/components/PostCard.tsx) | Home feed | Social post — author, content, optional Travel Pass share, tags, actions (like/comment/join/share). |
 | `ExploreCard` | [components/ExploreCard.tsx](../artifacts/mobile/components/ExploreCard.tsx) | Explore | Discovery card — gradient hero, category badge, rating, price. `size="large"` (220×280) or `size="small"` (160×200). |
 | `PassCard` | [components/PassCard.tsx](../artifacts/mobile/components/PassCard.tsx) | Passes, Home (when shared) | Travel Pass summary — status, destination, dates, total, item count, buddy requests. |
-| `TravelCardView` | [components/TravelCardView.tsx](../artifacts/mobile/components/TravelCardView.tsx) | Planner, Pass detail | Itinerary item — flight / hotel / activity / insurance / visa / dining / transport / event. Has `compact` mode and alternatives carousel. |
+| `TravelCardView` | [components/TravelCardView.tsx](../artifacts/mobile/components/TravelCardView.tsx) | Planner, Pass detail | Itinerary item — 8 card types. **Swipe-as-deck** for alternatives (planner only). Lifecycle badges: LIVE / DONE / IN Xh. Past cards dimmed. `compact` mode for lists. |
+| `ConflictToast` | [components/ConflictToast.tsx](../artifacts/mobile/components/ConflictToast.tsx) | Planner result | Floating banner for timeline conflicts from `plannerEngine.detectConflicts()`. Auto-dismiss 12s + manual ×. Shows highest-severity conflict. |
 | `ErrorBoundary` | [components/ErrorBoundary.tsx](../artifacts/mobile/components/ErrorBoundary.tsx) | App root | Top-level error catcher. Rendered in `_layout.tsx`. |
 | `ErrorFallback` | [components/ErrorFallback.tsx](../artifacts/mobile/components/ErrorFallback.tsx) | ErrorBoundary | Rendered when the boundary catches. |
 | `KeyboardAwareScrollViewCompat` | [components/KeyboardAwareScrollViewCompat.tsx](../artifacts/mobile/components/KeyboardAwareScrollViewCompat.tsx) | Forms | Keyboard-safe ScrollView shim. |
@@ -24,6 +25,19 @@ Hooks:
 | Hook | File | Purpose |
 |---|---|---|
 | `useColors` | [hooks/useColors.ts](../artifacts/mobile/hooks/useColors.ts) | Returns the active color palette (light/dark) + `radius`. **Call this in every component that uses a color.** |
+| `useNow` | [hooks/useNow.ts](../artifacts/mobile/hooks/useNow.ts) | Returns current time, refreshed every 60s (configurable). Also exports `formatDuration(ms)` (→ "2h 15m") and `cardLifecycle(start, end, now)` (→ "past" / "active" / "soon" / "future"). |
+
+Lib (client adapters):
+
+| Module | File | Purpose |
+|---|---|---|
+| `fetchAiSuggestions` | [lib/aiPlanner.ts](../artifacts/mobile/lib/aiPlanner.ts) | Client adapter for api-server `/v1/plan`. 8s timeout. Returns `{ source: "llm" | "fallback", suggestions }`. Failure-tolerant — never throws. |
+
+Engine (pure TS, no React):
+
+| Module | File | Purpose |
+|---|---|---|
+| `plannerEngine` | [context/plannerEngine.ts](../artifacts/mobile/context/plannerEngine.ts) | Timeline cascade logic. `reflowCards(cards, old, new)`, `removeCardAndReflow(cards, id)`, `detectConflicts(cards)`, `totalCost(cards)`. BFS over `dependsOn` graph. Unit-testable. |
 
 Context providers (state layer):
 
