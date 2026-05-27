@@ -1,3 +1,6 @@
+> **⚠ STALE as of 2026-05-26 — being rewritten.**
+> The visual direction has changed to the three-theme system (Stamped / Wallet / Ticket), Source Serif 4 + Geist + Geist Mono, cream/ink/terra palette. See `~/Downloads/design_handoff_travelbook/SPEC.md` (1,609 lines) and `tokens.css` for the new source of truth. Tokens live in `artifacts/mobile/constants/tokens.ts` accessed via `useTheme()`. Primitives are in `artifacts/mobile/components/primitives/`. The Inter / teal / coral references below no longer apply.
+
 # TravelBook UI Guidelines
 
 The design system for the TravelBook mobile app. Every token, spacing value, font, and pattern here is extracted from the prototype at `artifacts/mobile/`.

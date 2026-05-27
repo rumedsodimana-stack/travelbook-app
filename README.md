@@ -4,7 +4,9 @@ A social-first travel platform. Post trips, share Travel Passes, book end-to-end
 
 > **For product scope & vision:** [`PROJECT.md`](PROJECT.md)
 > **For contributor working rules:** [`CLAUDE.md`](CLAUDE.md)
-> **For design system:** [`docs/UI_GUIDELINES.md`](docs/UI_GUIDELINES.md) and [`docs/UI_COMPONENT_LIBRARY.md`](docs/UI_COMPONENT_LIBRARY.md)
+> **For design source-of-truth (NEW, as of 2026-05-26):** `~/Downloads/design_handoff_travelbook/` — read `SPEC.md` (full 1,609-line spec) and `tokens.css`. Three-theme system (Stamped/Wallet/Ticket), Source Serif + Geist + Geist Mono, cream/ink/terra palette.
+> **Implementation plan:** `~/.claude/plans/have-look-this-is-scalable-lerdorf.md`
+> **Legacy design docs (being rewritten):** `docs/UI_GUIDELINES.md`, `docs/UI_COMPONENT_LIBRARY.md` — stale, do not rely on.
 
 ---
 

@@ -3,34 +3,898 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TravelBook API — v1 vertical slice
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: account
+    description: Profile, documents, settings, inbox
+  - name: planner
+    description: AI itinerary builder + manual editing
+  - name: passes
+    description: Travel Pass list, detail, sharing
+  - name: feed
+    description: Home feed posts + interactions
+  - name: buddies
+    description: Travel-buddy fit-check + requests
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  # ───────────────────────────────────────── Account
+  /account/me:
+    get:
+      operationId: getMe
+      tags: [account]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+    patch:
+      operationId: patchMe
+      tags: [account]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UserPatch" }
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+
+  /account/documents:
+    get:
+      operationId: listDocuments
+      tags: [account]
+      responses:
+        "200":
+          description: User's documents
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Document" }
+    post:
+      operationId: createDocument
+      tags: [account]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentInput" }
+      responses:
+        "201":
+          description: Created document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+
+  /account/documents/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      operationId: patchDocument
+      tags: [account]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DocumentInput" }
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+    delete:
+      operationId: deleteDocument
+      tags: [account]
+      responses:
+        "204":
+          description: Deleted
+
+  /account/inbox:
+    get:
+      operationId: getInbox
+      tags: [account]
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string }
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, unread]
+      responses:
+        "200":
+          description: Inbox page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InboxPage" }
+
+  /account/inbox/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      operationId: markNotificationRead
+      tags: [account]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [read]
+              properties:
+                read: { type: boolean }
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Notification" }
+
+  # ───────────────────────────────────────── Planner
+  /planner/build:
+    post:
+      operationId: buildPlan
+      tags: [planner]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BuildPlanInput" }
+      responses:
+        "202":
+          description: Build started — passId + buildId for the SSE stream
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BuildPlanAccepted" }
+
+  /planner/{passId}/build-stream:
+    parameters:
+      - name: passId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: streamPlanBuild
+      tags: [planner]
+      description: |
+        Server-Sent Events. Each event is `{ kind, state, item }` per the
+        progressing build. Stream closes when the build completes or errors.
+        The generated client will return a Response; consumers should subscribe
+        with the SSE-aware fetch wrapper.
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /planner/{passId}:
+    parameters:
+      - name: passId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getPlan
+      tags: [planner]
+      responses:
+        "200":
+          description: Pass + items + member counts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassWithItems" }
+
+  /planner/{passId}/items/{itemId}:
+    parameters:
+      - name: passId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      operationId: patchItem
+      tags: [planner]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PatchItemInput" }
+      responses:
+        "200":
+          description: Patched item + reshuffled downstream
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassWithItems" }
+
+  /planner/{passId}/items/{itemId}/swap:
+    parameters:
+      - name: passId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: swapItem
+      tags: [planner]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [alternateId]
+              properties:
+                alternateId: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Swapped + reshuffled
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassWithItems" }
+
+  /planner/{passId}/book-all:
+    parameters:
+      - name: passId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: bookAll
+      tags: [planner]
+      responses:
+        "200":
+          description: Pass minted (state → upcoming, items confirmed)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassWithItems" }
+
+  /items/{itemId}/alternates:
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: listAlternates
+      tags: [planner]
+      responses:
+        "200":
+          description: Alternate options for this slot
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Alternate" }
+
+  # ───────────────────────────────────────── Passes
+  /passes:
+    get:
+      operationId: listPasses
+      tags: [passes]
+      parameters:
+        - name: state
+          in: query
+          required: false
+          description: Comma-separated states
+          schema: { type: string }
+      responses:
+        "200":
+          description: Grouped pass list
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassList" }
+
+  /passes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getPass
+      tags: [passes]
+      parameters:
+        - name: as
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [owner, buddy_preview]
+      responses:
+        "200":
+          description: Pass + items (+ fit-check if as=buddy_preview)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PassWithItems" }
+
+  /passes/{id}/next-up:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getNextUp
+      tags: [passes]
+      responses:
+        "200":
+          description: The single next-up item + a leave-by nudge if relevant
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NextUp" }
+
+  /passes/{id}/share:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: sharePass
+      tags: [passes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SharePassInput" }
+      responses:
+        "201":
+          description: Created share post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+
+  # ───────────────────────────────────────── Feed
+  /feed:
+    get:
+      operationId: getFeed
+      tags: [feed]
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Feed page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeedPage" }
+
+  /posts:
+    post:
+      operationId: createPost
+      tags: [feed]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePostInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+
+  /posts/{id}/like:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: likePost
+      tags: [feed]
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Post" }
+
+  # ───────────────────────────────────────── Buddies
+  /buddy-requests:
+    get:
+      operationId: listBuddyRequests
+      tags: [buddies]
+      responses:
+        "200":
+          description: Requests for passes I own
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BuddyRequest" }
+    post:
+      operationId: createBuddyRequest
+      tags: [buddies]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateBuddyRequestInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BuddyRequest" }
+
+  /buddy-requests/{id}/decide:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: decideBuddyRequest
+      tags: [buddies]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [accepted, declined]
+      responses:
+        "200":
+          description: Decided
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BuddyRequest" }
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
 
+    # ─── User ───
+    Theme:
+      type: string
+      enum: [stamped, wallet, ticket]
+    Pace: { type: string, enum: [slow, steady, packed] }
+    Budget: { type: string, enum: [lean, mid, splurge] }
+    Mornings: { type: string, enum: [sleep_in, coffee, early] }
+    Diet: { type: string, enum: [any, pescatarian, vegetarian, vegan] }
+    UserVisibility: { type: string, enum: [public, friends, private] }
+
+    User:
+      type: object
+      required: [id, email, handle, name, theme, visibility, currency, isVerified]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        handle: { type: string }
+        name: { type: string }
+        phone: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        theme: { $ref: "#/components/schemas/Theme" }
+        autoTheme: { type: boolean }
+        prefPace: { $ref: "#/components/schemas/Pace", nullable: true }
+        prefBudget: { $ref: "#/components/schemas/Budget", nullable: true }
+        prefMornings: { $ref: "#/components/schemas/Mornings", nullable: true }
+        prefDiet: { $ref: "#/components/schemas/Diet", nullable: true }
+        prefInterests:
+          type: array
+          items: { type: string }
+          nullable: true
+        visibility: { $ref: "#/components/schemas/UserVisibility" }
+        currency: { type: string }
+        isVerified: { type: boolean }
+
+    UserPatch:
+      type: object
+      properties:
+        name: { type: string }
+        handle: { type: string }
+        phone: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        theme: { $ref: "#/components/schemas/Theme" }
+        autoTheme: { type: boolean }
+        visibility: { $ref: "#/components/schemas/UserVisibility" }
+        currency: { type: string }
+        prefPace: { $ref: "#/components/schemas/Pace" }
+        prefBudget: { $ref: "#/components/schemas/Budget" }
+        prefMornings: { $ref: "#/components/schemas/Mornings" }
+        prefDiet: { $ref: "#/components/schemas/Diet" }
+        prefInterests:
+          type: array
+          items: { type: string }
+
+    # ─── Document ───
+    DocumentType:
+      type: string
+      enum: [passport, national_id, ktn, drivers_license, visa]
+    Document:
+      type: object
+      required: [id, userId, type, issuingCountry, number, issuedOn, holderName, holderDob, autofills]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        type: { $ref: "#/components/schemas/DocumentType" }
+        issuingCountry: { type: string }
+        number: { type: string }
+        issuedOn: { type: string }
+        expiresOn: { type: string, nullable: true }
+        holderName: { type: string }
+        holderDob: { type: string }
+        holderSex: { type: string, nullable: true }
+        autofills:
+          type: array
+          items: { type: string }
+    DocumentInput:
+      type: object
+      required: [type, issuingCountry, number, issuedOn, holderName, holderDob]
+      properties:
+        type: { $ref: "#/components/schemas/DocumentType" }
+        issuingCountry: { type: string }
+        number: { type: string }
+        issuedOn: { type: string }
+        expiresOn: { type: string, nullable: true }
+        holderName: { type: string }
+        holderDob: { type: string }
+        holderSex: { type: string, nullable: true }
+        autofills:
+          type: array
+          items: { type: string }
+
+    # ─── Pass / Items / Alternates ───
+    PassState:
+      type: string
+      enum: [draft, live, upcoming, archived]
+    PassVisibility:
+      type: string
+      enum: [private, link, friends, public]
+    ItineraryKind:
+      type: string
+      enum: [flight, stay, activity, transit, dining, insurance, visa, event, entertainment]
+    ItineraryState:
+      type: string
+      enum: [draft, confirmed, past, shifted, swapped, cancelled]
+
+    Pass:
+      type: object
+      required: [id, userId, passNo, code, title, startsOn, endsOn, state, totalCost, currency, visibility, openSeats, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        passNo: { type: integer }
+        code: { type: string }
+        title: { type: string }
+        coverImageUrl: { type: string, nullable: true }
+        startsOn: { type: string }
+        endsOn: { type: string }
+        state: { $ref: "#/components/schemas/PassState" }
+        totalCost: { type: string }
+        currency: { type: string }
+        aiPrompt: { type: string, nullable: true }
+        aiBuiltAt: { type: string, nullable: true }
+        visibility: { $ref: "#/components/schemas/PassVisibility" }
+        openSeats: { type: integer }
+        seatsClosesAt: { type: string, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    ItineraryItem:
+      type: object
+      required: [id, passId, sortAt, kind, state, title, subtitle, currency, data]
+      properties:
+        id: { type: string, format: uuid }
+        passId: { type: string, format: uuid }
+        sortAt: { type: string }
+        kind: { $ref: "#/components/schemas/ItineraryKind" }
+        state: { $ref: "#/components/schemas/ItineraryState" }
+        providerId: { type: string, format: uuid, nullable: true }
+        externalRef: { type: string, nullable: true }
+        title: { type: string }
+        subtitle: { type: string }
+        code: { type: string, nullable: true }
+        durationMinutes: { type: integer, nullable: true }
+        cost: { type: string, nullable: true }
+        currency: { type: string }
+        alternatesCount: { type: integer }
+        data:
+          type: object
+          additionalProperties: true
+
+    Alternate:
+      type: object
+      required: [id, itemId, rank, data, tags]
+      properties:
+        id: { type: string, format: uuid }
+        itemId: { type: string, format: uuid }
+        rank: { type: integer }
+        data:
+          type: object
+          additionalProperties: true
+        tags:
+          type: array
+          items: { type: string }
+        deltaCost: { type: string, nullable: true }
+        deltaMinutes: { type: integer, nullable: true }
+        score: { type: number, nullable: true }
+
+    PassMember:
+      type: object
+      required: [userId, role, joinedAt]
+      properties:
+        userId: { type: string, format: uuid }
+        handle: { type: string }
+        name: { type: string }
+        avatarUrl: { type: string, nullable: true }
+        role:
+          type: string
+          enum: [owner, holder, buddy, requested]
+        joinedAt: { type: string }
+
+    PassWithItems:
+      type: object
+      required: [pass, items, members]
+      properties:
+        pass: { $ref: "#/components/schemas/Pass" }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/ItineraryItem" }
+        members:
+          type: array
+          items: { $ref: "#/components/schemas/PassMember" }
+        fitCheck:
+          $ref: "#/components/schemas/FitCheck"
+          nullable: true
+
+    PassList:
+      type: object
+      required: [live, upcoming, drafts, archived]
+      properties:
+        live:
+          type: array
+          items: { $ref: "#/components/schemas/Pass" }
+        upcoming:
+          type: array
+          items: { $ref: "#/components/schemas/Pass" }
+        drafts:
+          type: array
+          items: { $ref: "#/components/schemas/Pass" }
+        archived:
+          type: array
+          items: { $ref: "#/components/schemas/Pass" }
+
+    NextUp:
+      type: object
+      properties:
+        item:
+          $ref: "#/components/schemas/ItineraryItem"
+          nullable: true
+        minutesUntil: { type: integer, nullable: true }
+        nudge: { type: string, nullable: true }
+
+    BuildPlanInput:
+      type: object
+      required: [prompt]
+      properties:
+        prompt: { type: string }
+        dates:
+          type: object
+          nullable: true
+          properties:
+            start: { type: string }
+            end: { type: string }
+        budgetUsd: { type: number, nullable: true }
+        travelers: { type: integer, default: 1 }
+        useDocuments:
+          type: array
+          items: { type: string, format: uuid }
+
+    BuildPlanAccepted:
+      type: object
+      required: [passId, buildId]
+      properties:
+        passId: { type: string, format: uuid }
+        buildId: { type: string }
+
+    PatchItemInput:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: [confirmed, cancelled]
+        sortAt: { type: string }
+        data:
+          type: object
+          additionalProperties: true
+
+    SharePassInput:
+      type: object
+      required: [visibility]
+      properties:
+        caption: { type: string }
+        visibility: { $ref: "#/components/schemas/PassVisibility" }
+        openSeats: { type: integer, minimum: 0, maximum: 8 }
+        seatsClosesAt: { type: string, nullable: true }
+
+    # ─── Feed / Posts ───
+    PostKind:
+      type: string
+      enum: [photo, pass_share, story, provider_offer, memory_book]
+    PostVisibility:
+      type: string
+      enum: [public, friends, link]
+
+    PostAuthor:
+      type: object
+      required: [id, handle, name]
+      properties:
+        id: { type: string, format: uuid }
+        handle: { type: string }
+        name: { type: string }
+        avatarUrl: { type: string, nullable: true }
+
+    Post:
+      type: object
+      required: [id, author, kind, caption, photoUrls, visibility, createdAt, likesCount, repostsCount]
+      properties:
+        id: { type: string, format: uuid }
+        author: { $ref: "#/components/schemas/PostAuthor" }
+        kind: { $ref: "#/components/schemas/PostKind" }
+        caption: { type: string }
+        photoUrls:
+          type: array
+          items: { type: string }
+        passId: { type: string, format: uuid, nullable: true }
+        pass:
+          $ref: "#/components/schemas/Pass"
+          nullable: true
+        visibility: { $ref: "#/components/schemas/PostVisibility" }
+        createdAt: { type: string }
+        likesCount: { type: integer }
+        repostsCount: { type: integer }
+        likedByMe: { type: boolean }
+
+    CreatePostInput:
+      type: object
+      required: [kind]
+      properties:
+        kind: { $ref: "#/components/schemas/PostKind" }
+        caption: { type: string }
+        photoUrls:
+          type: array
+          items: { type: string }
+        passId: { type: string, format: uuid, nullable: true }
+        visibility: { $ref: "#/components/schemas/PostVisibility" }
+
+    FeedPage:
+      type: object
+      required: [posts]
+      properties:
+        posts:
+          type: array
+          items: { $ref: "#/components/schemas/Post" }
+        nextCursor: { type: string, nullable: true }
+
+    # ─── Buddies ───
+    FitCheck:
+      type: object
+      required: [score, breakdown]
+      properties:
+        score: { type: number }
+        breakdown:
+          type: object
+          properties:
+            pace:
+              type: string
+              enum: [match, soft, mismatch]
+            budget:
+              type: string
+              enum: [match, soft, mismatch]
+            mornings:
+              type: string
+              enum: [match, soft, mismatch]
+            diet:
+              type: string
+              enum: [match, soft, mismatch]
+        costPreview:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: { $ref: "#/components/schemas/ItineraryKind" }
+              cost: { type: string }
+
+    BuddyRequest:
+      type: object
+      required: [id, passId, requesterId, state, message, fitScore, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        passId: { type: string, format: uuid }
+        requesterId: { type: string, format: uuid }
+        requester: { $ref: "#/components/schemas/PostAuthor" }
+        state:
+          type: string
+          enum: [pending, accepted, declined, expired]
+        message: { type: string }
+        fitScore: { type: number }
+        fitBreakdown:
+          type: object
+          additionalProperties: true
+        createdAt: { type: string }
+        decidedAt: { type: string, nullable: true }
+
+    CreateBuddyRequestInput:
+      type: object
+      required: [passId]
+      properties:
+        passId: { type: string, format: uuid }
+        message: { type: string }
+
+    # ─── Notifications ───
+    NotificationKind:
+      type: string
+      enum: [time_nudge, reshuffle, buddy_request, buddy_joined, visa_approved, flight_delay, provider_offer, trip_ending, book_minted]
+    Notification:
+      type: object
+      required: [id, userId, kind, title, body, sentAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/NotificationKind" }
+        title: { type: string }
+        body: { type: string }
+        deepLink: { type: string, nullable: true }
+        sentAt: { type: string }
+        readAt: { type: string, nullable: true }
+
+    InboxPage:
+      type: object
+      required: [notifications]
+      properties:
+        notifications:
+          type: array
+          items: { $ref: "#/components/schemas/Notification" }
+        nextCursor: { type: string, nullable: true }
+        unreadCount: { type: integer }

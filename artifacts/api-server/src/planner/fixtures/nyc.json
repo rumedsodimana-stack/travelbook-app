@@ -1,0 +1,136 @@
+{
+  "destinationCode": "US",
+  "name": "New York City",
+  "airports": ["JFK", "LGA", "EWR"],
+  "flights": [
+    {
+      "from": "LAX", "to": "JFK", "carrier": "JetBlue", "flightNo": "624",
+      "depTimeLocal": "08:00", "arrTimeLocal": "16:35", "durationMin": 335,
+      "stops": [], "fare": "economy", "aircraft": "Airbus A321neo",
+      "meals": false, "wifi": true, "priceUSD": 320,
+      "tags": ["DIRECT", "DAYTIME"]
+    },
+    {
+      "from": "LAX", "to": "JFK", "carrier": "Delta", "flightNo": "412",
+      "depTimeLocal": "23:30", "arrTimeLocal": "07:55", "durationMin": 325,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 767-300",
+      "meals": true, "wifi": true, "priceUSD": 380,
+      "tags": ["DIRECT", "RED-EYE"]
+    },
+    {
+      "from": "LHR", "to": "JFK", "carrier": "British Airways", "flightNo": "117",
+      "depTimeLocal": "12:15", "arrTimeLocal": "15:25", "durationMin": 490,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 777-300ER",
+      "meals": true, "wifi": true, "priceUSD": 680,
+      "tags": ["DIRECT", "DAYTIME"]
+    }
+  ],
+  "stays": [
+    {
+      "name": "The Greenwich Hotel", "address": "377 Greenwich St, Tribeca",
+      "nightlyUSD": 980, "rating": 5, "tags": ["LUXURY", "CULTURAL"]
+    },
+    {
+      "name": "Ace Hotel New York", "address": "20 W 29th St, NoMad",
+      "nightlyUSD": 380, "rating": 4, "tags": ["MID", "CULTURAL"]
+    },
+    {
+      "name": "The Standard High Line", "address": "848 Washington St, Meatpacking",
+      "nightlyUSD": 480, "view": "Hudson", "rating": 4, "tags": ["MID"]
+    },
+    {
+      "name": "Pod 51", "address": "230 E 51st St, Midtown East",
+      "nightlyUSD": 180, "rating": 3, "tags": ["LEAN"]
+    },
+    {
+      "name": "The Plaza", "address": "768 5th Ave, Midtown",
+      "nightlyUSD": 1240, "view": "Central Park", "rating": 5, "tags": ["LUXURY"]
+    }
+  ],
+  "activities": [
+    {
+      "name": "Met Museum Visit", "venue": "1000 5th Ave",
+      "durationMin": 180, "startsTimeLocal": "10:00", "priceUSD": 30,
+      "category": "culture", "tags": ["CULTURAL"]
+    },
+    {
+      "name": "High Line Walk", "venue": "From 14th to 34th Street",
+      "durationMin": 90, "startsTimeLocal": "11:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["SLOW", "LEAN"]
+    },
+    {
+      "name": "Broadway Show", "venue": "Theater District",
+      "durationMin": 150, "startsTimeLocal": "19:00", "priceUSD": 140,
+      "category": "culture", "tags": ["CULTURAL", "LATER"]
+    },
+    {
+      "name": "Brooklyn Bridge Walk · sunset", "venue": "From Manhattan side",
+      "durationMin": 60, "startsTimeLocal": "18:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["SLOW", "LEAN"]
+    },
+    {
+      "name": "Statue of Liberty Ferry", "venue": "Battery Park",
+      "durationMin": 240, "startsTimeLocal": "09:30", "priceUSD": 25,
+      "category": "culture", "tags": ["CULTURAL", "FAMILY-OK"]
+    },
+    {
+      "name": "Greenwich Village Food Tour", "venue": "Washington Sq",
+      "durationMin": 180, "startsTimeLocal": "13:00", "priceUSD": 65,
+      "category": "food", "tags": ["FOOD", "CULTURAL"]
+    }
+  ],
+  "transit": [
+    {
+      "carrier": "AirTrain + Subway", "service": "JFK → Manhattan",
+      "fromStation": "JFK Airport", "toStation": "Penn Station",
+      "depTimeLocal": "17:00", "arrTimeLocal": "18:15", "durationMin": 75,
+      "priceUSD": 11, "tags": ["DIRECT", "CHEAPER"]
+    },
+    {
+      "carrier": "Yellow Cab", "service": "JFK → Manhattan",
+      "fromStation": "JFK Airport", "toStation": "Midtown",
+      "depTimeLocal": "17:00", "arrTimeLocal": "18:00", "durationMin": 60,
+      "priceUSD": 75, "tags": ["DIRECT"]
+    }
+  ],
+  "dining": [
+    {
+      "name": "Le Bernardin", "cuisine": "French seafood (3 Michelin)",
+      "venue": "Midtown West", "startsTimeLocal": "19:00", "durationMin": 180,
+      "pricePerPersonUSD": 280, "tags": ["LUXURY", "FOOD"]
+    },
+    {
+      "name": "Joe's Pizza", "cuisine": "Pizza by the slice",
+      "venue": "Greenwich Village", "startsTimeLocal": "12:30", "durationMin": 20,
+      "pricePerPersonUSD": 5, "tags": ["LEAN", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Katz's Delicatessen", "cuisine": "Jewish deli",
+      "venue": "Lower East Side", "startsTimeLocal": "13:00", "durationMin": 60,
+      "pricePerPersonUSD": 28, "tags": ["MID", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Eleven Madison Park", "cuisine": "Plant-based fine dining",
+      "venue": "Madison Square Park", "startsTimeLocal": "19:00", "durationMin": 210,
+      "pricePerPersonUSD": 365, "tags": ["LUXURY", "FOOD"]
+    }
+  ],
+  "visa": [
+    {
+      "country": "US", "type": "tourist", "validityDays": 90,
+      "evisa": true, "priceUSD": 21
+    }
+  ],
+  "insurance": [
+    {
+      "carrier": "Allianz", "tier": "OneTrip Basic",
+      "coverage": "Medical $50k · trip cancel $5k",
+      "priceUSDPerDay": 7, "tags": ["MID"]
+    },
+    {
+      "carrier": "SafetyWing", "tier": "Nomad",
+      "coverage": "Medical $250k",
+      "priceUSDPerDay": 5, "tags": ["LEAN"]
+    }
+  ]
+}

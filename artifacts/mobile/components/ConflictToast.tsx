@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useColors } from "@/hooks/useColors";
+
+import { FONT_FAMILY } from "@/constants/typography";
+import { useTheme } from "@/hooks/useTheme";
 import { Conflict } from "@/context/plannerEngine";
 
 interface Props {
@@ -19,7 +21,7 @@ interface Props {
  * re-show even after a dismiss.
  */
 export function ConflictToast({ conflicts, dismissalMs = 12_000 }: Props) {
-  const colors = useColors();
+  const { t } = useTheme();
   const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
   // Pick the most-severe conflict to show first. Errors > warnings.
@@ -44,13 +46,13 @@ export function ConflictToast({ conflicts, dismissalMs = 12_000 }: Props) {
   if (!top || dismissedKey === conflictKey) return null;
 
   const isError = top.severity === "error";
-  const accent = isError ? colors.destructive : "#F4A261";
+  const accent = isError ? t.stampRed : t.terra;
 
   return (
     <View
       style={[
         styles.wrapper,
-        { backgroundColor: colors.card, borderColor: accent + "60", shadowColor: accent },
+        { backgroundColor: t.surface, borderColor: accent + "60", shadowColor: accent },
       ]}
       pointerEvents="box-none"
     >
@@ -58,15 +60,15 @@ export function ConflictToast({ conflicts, dismissalMs = 12_000 }: Props) {
         <Ionicons name={isError ? "alert-circle" : "warning"} size={20} color={accent} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: t.bodyText }]} numberOfLines={1}>
           {top.cardTitle}
         </Text>
-        <Text style={[styles.message, { color: colors.mutedForeground }]} numberOfLines={2}>
+        <Text style={[styles.message, { color: t.mutedText }]} numberOfLines={2}>
           {top.message}
         </Text>
       </View>
       <TouchableOpacity onPress={() => setDismissedKey(conflictKey)} hitSlop={10}>
-        <Ionicons name="close" size={18} color={colors.mutedForeground} />
+        <Ionicons name="close" size={18} color={t.mutedText} />
       </TouchableOpacity>
     </View>
   );
@@ -99,11 +101,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: FONT_FAMILY.bodyMedium,
   },
   message: {
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: FONT_FAMILY.body,
     marginTop: 2,
     lineHeight: 17,
   },

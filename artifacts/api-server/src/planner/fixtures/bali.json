@@ -1,0 +1,140 @@
+{
+  "destinationCode": "ID",
+  "name": "Bali",
+  "airports": ["DPS"],
+  "flights": [
+    {
+      "from": "JFK", "to": "DPS", "carrier": "Singapore Airlines", "flightNo": "25",
+      "depTimeLocal": "23:00", "arrTimeLocal": "07:25", "durationMin": 1225,
+      "stops": ["SIN"], "fare": "economy", "aircraft": "Airbus A350-900",
+      "meals": true, "wifi": true, "priceUSD": 1380,
+      "tags": ["RED-EYE"]
+    },
+    {
+      "from": "LAX", "to": "DPS", "carrier": "Qantas", "flightNo": "12",
+      "depTimeLocal": "22:30", "arrTimeLocal": "11:15", "durationMin": 1245,
+      "stops": ["SYD"], "fare": "economy", "aircraft": "Airbus A380",
+      "meals": true, "wifi": true, "priceUSD": 1280,
+      "tags": ["CHEAPER", "RED-EYE"]
+    },
+    {
+      "from": "DPS", "to": "JFK", "carrier": "Singapore Airlines", "flightNo": "26",
+      "depTimeLocal": "08:30", "arrTimeLocal": "20:55", "durationMin": 1265,
+      "stops": ["SIN"], "fare": "economy", "aircraft": "Airbus A350-900",
+      "meals": true, "wifi": true, "priceUSD": 1380,
+      "tags": ["DAYTIME"]
+    }
+  ],
+  "stays": [
+    {
+      "name": "Soori Bali", "address": "Banjar Dukuh, Tabanan",
+      "nightlyUSD": 1100, "view": "Ocean", "rating": 5, "tags": ["LUXURY", "WELLNESS"]
+    },
+    {
+      "name": "Amankila", "address": "Manggis, East Bali",
+      "nightlyUSD": 1450, "view": "Cliff", "rating": 5, "tags": ["LUXURY", "WELLNESS"]
+    },
+    {
+      "name": "Bisma Eight", "address": "Jl. Bisma, Ubud",
+      "nightlyUSD": 240, "view": "Jungle", "rating": 4, "tags": ["MID", "WELLNESS"]
+    },
+    {
+      "name": "Padma Resort Legian", "address": "Jl. Padma 1, Legian",
+      "nightlyUSD": 180, "rating": 4, "tags": ["MID", "FAMILY-OK"]
+    },
+    {
+      "name": "Tugu Bali", "address": "Jl. Pantai Batu Bolong, Canggu",
+      "nightlyUSD": 380, "view": "Beach", "rating": 4, "tags": ["MID", "CULTURAL"]
+    },
+    {
+      "name": "Mama's Warung Guesthouse", "address": "Jl. Pantai Pererenan, Canggu",
+      "nightlyUSD": 45, "rating": 3, "tags": ["LEAN"]
+    }
+  ],
+  "activities": [
+    {
+      "name": "Surf Lesson · Berawa", "venue": "Berawa Beach, Canggu",
+      "durationMin": 120, "startsTimeLocal": "07:00", "priceUSD": 45,
+      "category": "outdoors", "tags": ["ADVENTURE", "EARLIER"]
+    },
+    {
+      "name": "Tegallalang Rice Terrace Walk", "venue": "Tegallalang, Ubud",
+      "durationMin": 90, "startsTimeLocal": "08:00", "priceUSD": 5,
+      "category": "outdoors", "tags": ["CULTURAL", "SLOW", "LEAN"]
+    },
+    {
+      "name": "Yoga at The Yoga Barn", "venue": "Pengosekan, Ubud",
+      "durationMin": 90, "startsTimeLocal": "09:00", "priceUSD": 15,
+      "category": "wellness", "tags": ["WELLNESS", "SLOW"]
+    },
+    {
+      "name": "Mt Batur Sunrise Hike", "venue": "Kintamani",
+      "durationMin": 360, "startsTimeLocal": "02:00", "priceUSD": 65,
+      "category": "outdoors", "tags": ["ADVENTURE", "EARLIER"]
+    },
+    {
+      "name": "Tirta Empul Water Temple", "venue": "Tampaksiring",
+      "durationMin": 120, "startsTimeLocal": "09:30", "priceUSD": 8,
+      "category": "culture", "tags": ["CULTURAL", "SLOW"]
+    },
+    {
+      "name": "Cooking Class · Paon Bali", "venue": "Laplapan, Ubud",
+      "durationMin": 240, "startsTimeLocal": "10:00", "priceUSD": 40,
+      "category": "food", "tags": ["FOOD", "CULTURAL"]
+    }
+  ],
+  "transit": [
+    {
+      "carrier": "Private Driver", "service": "Airport → Ubud",
+      "fromStation": "DPS Airport", "toStation": "Ubud",
+      "depTimeLocal": "08:00", "arrTimeLocal": "09:30", "durationMin": 90,
+      "priceUSD": 35, "tags": ["DIRECT"]
+    },
+    {
+      "carrier": "Private Driver", "service": "Ubud → Canggu",
+      "fromStation": "Ubud", "toStation": "Canggu",
+      "depTimeLocal": "11:00", "arrTimeLocal": "12:30", "durationMin": 90,
+      "priceUSD": 30, "tags": ["DIRECT"]
+    }
+  ],
+  "dining": [
+    {
+      "name": "Locavore", "cuisine": "Modern Indonesian (tasting menu)",
+      "venue": "Ubud", "startsTimeLocal": "19:00", "durationMin": 180,
+      "pricePerPersonUSD": 130, "tags": ["LUXURY", "FOOD"]
+    },
+    {
+      "name": "Warung Babi Guling Ibu Oka", "cuisine": "Balinese (suckling pig)",
+      "venue": "Ubud", "startsTimeLocal": "12:00", "durationMin": 45,
+      "pricePerPersonUSD": 8, "tags": ["LEAN", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "La Brisa", "cuisine": "Coastal Spanish",
+      "venue": "Echo Beach, Canggu", "startsTimeLocal": "18:30", "durationMin": 120,
+      "pricePerPersonUSD": 35, "tags": ["MID", "FOOD"]
+    },
+    {
+      "name": "Crate Cafe", "cuisine": "Breakfast & coffee",
+      "venue": "Canggu", "startsTimeLocal": "09:00", "durationMin": 45,
+      "pricePerPersonUSD": 10, "tags": ["LEAN", "SLOW"]
+    }
+  ],
+  "visa": [
+    {
+      "country": "ID", "type": "tourist", "validityDays": 30,
+      "evisa": true, "priceUSD": 35
+    }
+  ],
+  "insurance": [
+    {
+      "carrier": "World Nomads", "tier": "Standard",
+      "coverage": "Medical $100k · surf-coverage add-on",
+      "priceUSDPerDay": 8, "tags": ["MID", "ADVENTURE"]
+    },
+    {
+      "carrier": "SafetyWing", "tier": "Nomad",
+      "coverage": "Medical $250k · subscription",
+      "priceUSDPerDay": 5, "tags": ["LEAN"]
+    }
+  ]
+}

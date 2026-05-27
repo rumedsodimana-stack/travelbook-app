@@ -1,10 +1,20 @@
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from "@expo-google-fonts/inter";
+  Geist_400Regular,
+  Geist_500Medium,
+  Geist_600SemiBold,
+  useFonts as useGeistFonts,
+} from "@expo-google-fonts/geist";
+import {
+  GeistMono_400Regular,
+  GeistMono_500Medium,
+  useFonts as useGeistMonoFonts,
+} from "@expo-google-fonts/geist-mono";
+import {
+  SourceSerif4_400Regular,
+  SourceSerif4_500Medium,
+  SourceSerif4_600SemiBold,
+  useFonts as useSerifFonts,
+} from "@expo-google-fonts/source-serif-4";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -15,49 +25,70 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider } from "@/context/AuthProvider";
 import { PlannerProvider } from "@/context/PlannerContext";
+import { ThemeProvider } from "@/context/ThemeProvider";
+import { configureApi } from "@/lib/api";
 
-SplashScreen.preventAutoHideAsync();
+configureApi();
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+  const [serifLoaded, serifError] = useSerifFonts({
+    SourceSerif4_400Regular,
+    SourceSerif4_500Medium,
+    SourceSerif4_600SemiBold,
+  });
+  const [geistLoaded, geistError] = useGeistFonts({
+    Geist_400Regular,
+    Geist_500Medium,
+    Geist_600SemiBold,
+  });
+  const [monoLoaded, monoError] = useGeistMonoFonts({
+    GeistMono_400Regular,
+    GeistMono_500Medium,
   });
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  const fontsReady = serifLoaded && geistLoaded && monoLoaded;
+  const fontError = serifError || geistError || monoError;
 
-  if (!fontsLoaded && !fontError) return null;
+  useEffect(() => {
+    if (fontsReady || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsReady, fontError]);
+
+  if (!fontsReady && !fontError) return null;
 
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <AppProvider>
-            <PlannerProvider>
-              <GestureHandlerRootView>
-                <KeyboardProvider>
-                  <RootLayoutNav />
-                </KeyboardProvider>
-              </GestureHandlerRootView>
-            </PlannerProvider>
-          </AppProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <AppProvider>
+                <PlannerProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <KeyboardProvider>
+                      <RootLayoutNav />
+                    </KeyboardProvider>
+                  </GestureHandlerRootView>
+                </PlannerProvider>
+              </AppProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

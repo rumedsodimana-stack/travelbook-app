@@ -1,6 +1,6 @@
 # TravelBook — Project Overview
 
-This document describes **what TravelBook is** — the product, the users, the scope. For working rules and engineering guardrails, see [`CLAUDE.md`](CLAUDE.md). For setup and commands, see [`README.md`](README.md).
+This document describes **what TravelBook is** — the product, the users, the scope. For working rules and engineering guardrails, see [`CLAUDE.md`](CLAUDE.md). For setup and commands, see [`README.md`](README.md). For the complete visual + interaction spec (24 designed screens, 3 themes, full data model, AI Planner algorithm), see the design handoff at `~/Downloads/design_handoff_travelbook/` — `SPEC.md` is the source of truth.
 
 ---
 
@@ -105,7 +105,7 @@ Four interactions carry the brand. Every new feature should reinforce — not di
 | Pillar | Mechanism | Why it matters |
 |---|---|---|
 | **Trust** | Encrypted document vault, Zod-validated inputs, pnpm minimum release age (supply-chain defense). | Travelers hand over passports and money — the UX must feel safer than a bank. |
-| **Warmth** | Cream backgrounds, hashed avatar colors, coral accent, Inter-only typography, haptics on every intent. | Travel is emotional. The product should feel like a journal, not a kiosk. |
+| **Warmth** | Cream paper canvas, ink-navy ramp, terra accent (used sparingly), Source Serif display + Geist body + Geist Mono codes, passport-stamp motifs, haptics on every intent. | Travel is emotional. The product should feel like a journal, not a kiosk. |
 | **Completeness** | Eight card types cover every trip component; AI Builder produces an end-to-end itinerary in one call. | Users shouldn't bounce between apps. One pass = one trip. |
 | **Social** | Stories, feed, public passes, buddy requests. | Travel is better shared. The feed is the top funnel. |
 | **Provider-native** | Every provider category is a first-class card type, not a generic "product." | Providers see their own category in the app — they're not a rounding-error tab inside a consumer app. |

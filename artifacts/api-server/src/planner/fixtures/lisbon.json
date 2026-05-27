@@ -1,0 +1,132 @@
+{
+  "destinationCode": "PT",
+  "name": "Lisbon",
+  "airports": ["LIS"],
+  "flights": [
+    {
+      "from": "JFK", "to": "LIS", "carrier": "TAP Air Portugal", "flightNo": "208",
+      "depTimeLocal": "21:25", "arrTimeLocal": "09:05", "durationMin": 400,
+      "stops": [], "fare": "economy", "aircraft": "Airbus A330-900neo",
+      "meals": true, "wifi": true, "priceUSD": 620,
+      "tags": ["DIRECT", "RED-EYE", "CHEAPER"]
+    },
+    {
+      "from": "JFK", "to": "LIS", "carrier": "United", "flightNo": "65",
+      "depTimeLocal": "20:55", "arrTimeLocal": "08:50", "durationMin": 415,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 757-200",
+      "meals": true, "wifi": true, "priceUSD": 720,
+      "tags": ["DIRECT", "RED-EYE"]
+    },
+    {
+      "from": "LIS", "to": "JFK", "carrier": "TAP Air Portugal", "flightNo": "209",
+      "depTimeLocal": "10:50", "arrTimeLocal": "14:00", "durationMin": 490,
+      "stops": [], "fare": "economy", "aircraft": "Airbus A330-900neo",
+      "meals": true, "wifi": true, "priceUSD": 620,
+      "tags": ["DIRECT", "DAYTIME"]
+    }
+  ],
+  "stays": [
+    {
+      "name": "Bairro Alto Hotel", "address": "Praça Luís de Camões 2, Lisbon",
+      "nightlyUSD": 480, "view": "Tagus", "rating": 5, "tags": ["LUXURY", "CULTURAL"]
+    },
+    {
+      "name": "Memmo Alfama", "address": "Travessa das Merceeiras 27, Lisbon",
+      "nightlyUSD": 320, "view": "River", "rating": 4, "tags": ["MID", "CULTURAL"]
+    },
+    {
+      "name": "Hotel Avenida Palace", "address": "Rua 1º de Dezembro 123, Lisbon",
+      "nightlyUSD": 280, "rating": 4, "tags": ["MID"]
+    },
+    {
+      "name": "The 8 Downtown Suites", "address": "Rua dos Sapateiros 81, Lisbon",
+      "nightlyUSD": 140, "rating": 3, "tags": ["LEAN"]
+    }
+  ],
+  "activities": [
+    {
+      "name": "Tram 28 Ride · Graça to Estrela", "venue": "Lisbon",
+      "durationMin": 60, "startsTimeLocal": "09:00", "priceUSD": 3,
+      "category": "culture", "tags": ["CULTURAL", "LEAN"]
+    },
+    {
+      "name": "Belém Tower + Jerónimos Monastery", "venue": "Belém, Lisbon",
+      "durationMin": 180, "startsTimeLocal": "10:00", "priceUSD": 18,
+      "category": "culture", "tags": ["CULTURAL", "SLOW"]
+    },
+    {
+      "name": "Fado Show · Tasca do Chico", "venue": "Bairro Alto",
+      "durationMin": 90, "startsTimeLocal": "21:30", "priceUSD": 25,
+      "category": "culture", "tags": ["CULTURAL", "LATER"]
+    },
+    {
+      "name": "LX Factory Market", "venue": "Alcântara, Lisbon",
+      "durationMin": 120, "startsTimeLocal": "14:00", "priceUSD": 0,
+      "category": "culture", "tags": ["CULTURAL", "LEAN"]
+    },
+    {
+      "name": "Sintra Day Trip · Pena Palace", "venue": "Sintra",
+      "durationMin": 360, "startsTimeLocal": "09:00", "priceUSD": 55,
+      "category": "culture", "tags": ["CULTURAL", "SLOW"]
+    },
+    {
+      "name": "Cascais Coastline Walk", "venue": "Cascais",
+      "durationMin": 180, "startsTimeLocal": "10:30", "priceUSD": 0,
+      "category": "outdoors", "tags": ["SLOW", "LEAN"]
+    }
+  ],
+  "transit": [
+    {
+      "carrier": "Aerobus", "service": "Line 1",
+      "fromStation": "Lisbon Airport", "toStation": "Cais do Sodré",
+      "depTimeLocal": "09:30", "arrTimeLocal": "10:10", "durationMin": 40,
+      "priceUSD": 4, "tags": ["CHEAPER", "DIRECT"]
+    },
+    {
+      "carrier": "CP", "service": "Lisbon → Sintra",
+      "fromStation": "Rossio", "toStation": "Sintra",
+      "depTimeLocal": "08:30", "arrTimeLocal": "09:10", "durationMin": 40,
+      "priceUSD": 2, "tags": ["DIRECT", "CHEAPER"]
+    }
+  ],
+  "dining": [
+    {
+      "name": "Belcanto", "cuisine": "Modern Portuguese (2 Michelin)",
+      "venue": "Chiado, Lisbon", "startsTimeLocal": "19:30", "durationMin": 180,
+      "pricePerPersonUSD": 220, "tags": ["LUXURY", "FOOD"]
+    },
+    {
+      "name": "Pastéis de Belém", "cuisine": "Pastry",
+      "venue": "Belém", "startsTimeLocal": "10:00", "durationMin": 30,
+      "pricePerPersonUSD": 5, "tags": ["LEAN", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Time Out Market", "cuisine": "Variety",
+      "venue": "Cais do Sodré", "startsTimeLocal": "13:00", "durationMin": 90,
+      "pricePerPersonUSD": 20, "tags": ["MID", "FOOD", "FAMILY-OK"]
+    },
+    {
+      "name": "Cervejaria Ramiro", "cuisine": "Seafood",
+      "venue": "Anjos", "startsTimeLocal": "20:00", "durationMin": 120,
+      "pricePerPersonUSD": 55, "tags": ["MID", "FOOD"]
+    }
+  ],
+  "visa": [
+    {
+      "country": "PT", "type": "tourist", "validityDays": 90,
+      "evisa": false, "priceUSD": 0
+    }
+  ],
+  "insurance": [
+    {
+      "carrier": "World Nomads", "tier": "Standard",
+      "coverage": "Medical $100k · trip cancel $5k",
+      "priceUSDPerDay": 6, "tags": ["MID"]
+    },
+    {
+      "carrier": "SafetyWing", "tier": "Nomad",
+      "coverage": "Medical $250k",
+      "priceUSDPerDay": 5, "tags": ["LEAN"]
+    }
+  ]
+}

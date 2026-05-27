@@ -1,3 +1,6 @@
+> **⚠ STALE as of 2026-05-26 — being rewritten.**
+> The component inventory below describes the legacy `PostCard / PassCard / ExploreCard / StoryBubble / TravelCardView` design — those have been deleted. The new primitives live in `artifacts/mobile/components/primitives/` (`TabBar`, `TabIcon`, `ScreenHeader`, `PillBtn`, `TimeChip`, `Stamp`, `RouteLine`, `Barcode`, `AvatarDot`, `Placeholder`). Feature components (PassCard, FeedPost, etc.) will be rebuilt in Phases D–E per the design handoff at `~/Downloads/design_handoff_travelbook/SPEC.md`.
+
 # TravelBook UI Component Library
 
 Extracted from the prototype at `artifacts/mobile/`. Every component listed here is the **only** implementation for its purpose — reuse first, extend second, never fork.

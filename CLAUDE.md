@@ -66,7 +66,9 @@ travelbook/
 | | React Native Reanimated | ~4.1.1 |
 | | React Query | catalog (^5.90.21) |
 | | Zod | catalog (^3.25.76) |
-| | `@expo-google-fonts/inter` | Inter 400 / 500 / 600 / 700 |
+| | `@expo-google-fonts/source-serif-4` | Source Serif 4: 400 / 500 / 600 |
+| | `@expo-google-fonts/geist` | Geist: 400 / 500 / 600 |
+| | `@expo-google-fonts/geist-mono` | Geist Mono: 400 / 500 |
 | | `@expo/vector-icons` | Ionicons, Feather, MaterialCommunityIcons |
 | | `expo-symbols` | SF Symbols on iOS |
 | | `expo-blur`, `expo-glass-effect`, `expo-haptics`, `expo-linear-gradient` | iOS-native feel |
@@ -77,7 +79,7 @@ travelbook/
 | **Codegen** | Orval (OpenAPI → hooks + Zod) | |
 
 - **Never upgrade React or React Native.** Expo 54 pins them.
-- **Never add a second icon library.** Use `@expo/vector-icons` + `expo-symbols` only.
+- **Stroke SVG icons via `react-native-svg`** are the default (see `components/primitives/TabIcon.tsx`). `@expo/vector-icons` and `expo-symbols` remain available for infrastructure (error states, conflict toasts) but new product icons should be hand-crafted stroke SVGs from the spec.
 - **Never add `framer-motion` to the mobile app.** It is a web-only dependency in the catalog. Use `react-native-reanimated` for mobile animation.
 
 ---
@@ -110,15 +112,19 @@ Prefer the filtered commands over `cd`-ing into artifact directories.
 
 ---
 
-## 5. Respect the prototype UI — the design system
+## 5. Design system — the new direction (as of 2026-05-26)
 
-- **The UI of the prototype is the source of truth.** Study [`docs/UI_GUIDELINES.md`](docs/UI_GUIDELINES.md) and [`docs/UI_COMPONENT_LIBRARY.md`](docs/UI_COMPONENT_LIBRARY.md) before writing any UI code.
-- **All colors come from [`artifacts/mobile/constants/colors.ts`](artifacts/mobile/constants/colors.ts) via the [`useColors()`](artifacts/mobile/hooks/useColors.ts) hook.** Never hardcode a hex value inside a screen or component — import the token.
-- **All typography comes from the Inter font family** loaded in [`app/_layout.tsx`](artifacts/mobile/app/_layout.tsx): `Inter_400Regular`, `Inter_500Medium`, `Inter_600SemiBold`, `Inter_700Bold`. Reference the exact family name in `fontFamily` — do not rely on `fontWeight`.
-- **The default radius is 12**, exposed as `colors.radius`. Larger surfaces (explore cards, pass cards, trip cards) use 16 / 18 / 20 — each is already established in the prototype. Do not invent a new radius without checking.
-- **No new icon sets.** Reuse existing `CARD_CONFIGS` in [`components/TravelCardView.tsx`](artifacts/mobile/components/TravelCardView.tsx) when mapping card types to icons/colors.
+The visual language is documented in the design handoff at **`~/Downloads/design_handoff_travelbook/`** — read `SPEC.md` (1,609 lines, full spec) and `tokens.css` (color + type + spacing tokens) before writing any UI. The 24 screen JSX files in `screens/` are visual references — lift values, not code.
 
-Full rules: [`docs/UI_GUIDELINES.md`](docs/UI_GUIDELINES.md).
+- **Three pickable themes.** TravelBook ships with **Stamped** (default — cream paper + ink navy + terra accent, reads like a passport), **Wallet** (deep navy + barcode strips, Apple Wallet feel), and **Ticket** (paper-light + dashed perforations + terra stub). All themes consume the same data; v1 only populates Stamped — Wallet/Ticket are scaffolded but inert.
+- **All design tokens live in [`artifacts/mobile/constants/tokens.ts`](artifacts/mobile/constants/tokens.ts)** as a `THEMES: Record<ThemeName, ThemeTokens>` map. Access the active theme's tokens via the [`useTheme()`](artifacts/mobile/hooks/useTheme.ts) hook, which reads from [`context/ThemeProvider.tsx`](artifacts/mobile/context/ThemeProvider.tsx). Never hardcode a hex value — every color resolves through `t.ink`, `t.terra`, `t.paper`, etc.
+- **Typography is three families.** `Source Serif 4` (display — headlines, trip names), `Geist` (body — labels, copy, buttons), `Geist Mono` (codes, timestamps, machine output — **always uppercase + tracked `letterSpacing: 0.06em` minimum**). Loaded in [`app/_layout.tsx`](artifacts/mobile/app/_layout.tsx) via `@expo-google-fonts/source-serif-4`, `@expo-google-fonts/geist`, `@expo-google-fonts/geist-mono`. Use the type ramp from [`constants/typography.ts`](artifacts/mobile/constants/typography.ts) (`TYPE.displayXL`, `TYPE.displayL`, `TYPE.body`, `TYPE.monoXS`, etc.) — never set `fontWeight` directly.
+- **Radii**: `RADII.card = 14`, `RADII.small = 8`, `RADII.pill = 999`. Spacing scale: 4 / 8 / 14 / 22 / 36.
+- **Reusable primitives** live in [`artifacts/mobile/components/primitives/`](artifacts/mobile/components/primitives/): `TabBar`, `TabIcon`, `ScreenHeader`, `PillBtn`, `TimeChip`, `Stamp`, `RouteLine`, `Barcode`, `AvatarDot`, `Placeholder` (the striped `<Ph>` from the spec). Compose every screen out of these — don't reach for raw `<View>` + inline styles.
+- **Voice rules (load-bearing)** — mono labels uppercase + tracked, body sentence-case, **no exclamation marks**, no blame, error sentence-1 = one fact, sentence-2 = consequence + verb. Reference `SPEC.md §7.21 StatesCatalogue` and `screens/utility.jsx`.
+- **Stamp red** (`t.stampRed`) is only for stamps. **Never** for body text or destructive CTAs.
+
+Old `Inter` font, `useColors()` hook, single-theme `colors.ts`, and prototype components (`PostCard`, `PassCard`, `ExploreCard`, `StoryBubble`, `TravelCardView`) are **removed** as of the Phase A reset. Do not re-introduce them.
 
 ---
 
@@ -126,13 +132,14 @@ Full rules: [`docs/UI_GUIDELINES.md`](docs/UI_GUIDELINES.md).
 
 Before you create any new file in `artifacts/mobile/`, check if it already exists:
 
-1. **Components** → [`artifacts/mobile/components/`](artifacts/mobile/components/) — `PostCard`, `StoryBubble`, `ExploreCard`, `PassCard`, `TravelCardView`, `ConflictToast`, `ErrorBoundary`, `ErrorFallback`, `KeyboardAwareScrollViewCompat`.
-2. **State** → [`artifacts/mobile/context/`](artifacts/mobile/context/) — `AppContext` (user, posts, stories, documents) and `PlannerContext` (passes, plan generation, card CRUD, conflicts). If your feature needs user, posts, passes, or cards — use these; do not fork.
-3. **Engine** → [`artifacts/mobile/context/plannerEngine.ts`](artifacts/mobile/context/plannerEngine.ts) — pure TS timeline logic. `reflowCards`, `removeCardAndReflow`, `detectConflicts`, `totalCost`. No RN deps — unit-testable.
-4. **Hooks** → [`artifacts/mobile/hooks/`](artifacts/mobile/hooks/) — `useColors`, `useNow`. Add new hooks here, never inline in a screen.
-5. **Lib** → [`artifacts/mobile/lib/`](artifacts/mobile/lib/) — `aiPlanner.ts` (client adapter for LLM endpoint). Add new client adapters here.
-6. **Constants** → [`artifacts/mobile/constants/`](artifacts/mobile/constants/) — `colors.ts`. Add new tokens here, never in-line.
-7. **Routes** → [`artifacts/mobile/app/`](artifacts/mobile/app/) — one file per route. `(tabs)/` is the tab group. Modals and detail screens go at the root of `app/` as separate routes.
+1. **Primitives** → [`artifacts/mobile/components/primitives/`](artifacts/mobile/components/primitives/) — `TabBar`, `TabIcon`, `ScreenHeader`, `PillBtn`, `TimeChip`, `Stamp`, `RouteLine`, `Barcode`, `AvatarDot`, `Placeholder`. Every screen composes from these.
+2. **Infrastructure components** → [`artifacts/mobile/components/`](artifacts/mobile/components/) — `ConflictToast`, `ErrorBoundary`, `ErrorFallback`, `KeyboardAwareScrollViewCompat`.
+3. **State** → [`artifacts/mobile/context/`](artifacts/mobile/context/) — `ThemeProvider` (active theme + tokens), `AppContext` (user, posts, stories, documents — being rewritten in Phase B/C/D against the new spec data models), `PlannerContext` (passes, plan generation, card CRUD, conflicts — same).
+4. **Engine** → [`artifacts/mobile/context/plannerEngine.ts`](artifacts/mobile/context/plannerEngine.ts) — pure TS timeline logic. `reflowCards`, `removeCardAndReflow`, `detectConflicts`, `totalCost`. No RN deps — unit-testable. Reshuffle algorithm in `SPEC.md §5.3`.
+5. **Hooks** → [`artifacts/mobile/hooks/`](artifacts/mobile/hooks/) — `useTheme`, `useNow`. Add new hooks here, never inline in a screen.
+6. **Lib** → [`artifacts/mobile/lib/`](artifacts/mobile/lib/) — `aiPlanner.ts` (client adapter for AI Planner endpoint). Add new client adapters here.
+7. **Constants** → [`artifacts/mobile/constants/`](artifacts/mobile/constants/) — `tokens.ts` (theme tokens, radii, spacing), `typography.ts` (font families + type ramp). Add new tokens here, never inline.
+8. **Routes** → [`artifacts/mobile/app/`](artifacts/mobile/app/) — one file per route. `(tabs)/` is the tab group (index/explore/planner/pass/account). Modals and detail screens go at the root of `app/` as separate routes.
 
 If something similar already exists → **extend it, do not duplicate**. Duplication is the #1 risk in a fast-moving monorepo.
 
@@ -186,32 +193,36 @@ Rules:
 
 A change is only complete when all of these are true:
 
-- [ ] The prototype UI is respected — no new visual language.
-- [ ] No duplication of existing components, hooks, context methods, or utilities.
-- [ ] Every color flows through `useColors()`. No hardcoded hex in new code.
-- [ ] Every font uses `fontFamily: "Inter_XXX"`. No raw `fontWeight`.
+- [ ] The design handoff (`~/Downloads/design_handoff_travelbook/`) is respected — no new visual language invented inline.
+- [ ] No duplication of existing primitives, hooks, context methods, or utilities.
+- [ ] Every color flows through `useTheme()` → `t.<token>`. No hardcoded hex in new code (excepting `#ffffff` on dark surfaces where appropriate).
+- [ ] Every text node uses the `TYPE.*` ramp from `constants/typography.ts`. No raw `fontWeight`. Mono variants are uppercase + tracked.
+- [ ] Voice rules followed: no `!`, no blame, error = one fact + one consequence.
 - [ ] `pnpm run typecheck` passes clean.
 - [ ] iOS, Android, and web branches all handled where relevant.
 - [ ] `README.md` is updated if user-visible behavior or setup changed.
-- [ ] Haptic feedback added on every destructive / confirming / selection action that already has a precedent (see `PostCard`, `PassCard`, `TravelCardView`).
+- [ ] Haptic feedback added on every destructive / confirming / selection action (use `expo-haptics` — `PillBtn` already does this).
 
 ---
 
 ## 11. Pre-flight checklist (before writing UI code)
 
 ```
-[ ] I opened docs/UI_GUIDELINES.md and docs/UI_COMPONENT_LIBRARY.md.
-[ ] I searched artifacts/mobile/components/ for an existing component that does this.
+[ ] I opened ~/Downloads/design_handoff_travelbook/SPEC.md for the screen I'm building.
+[ ] I opened the matching screens/*.jsx for visual reference.
+[ ] I searched artifacts/mobile/components/primitives/ for an existing primitive that does this.
 [ ] I searched artifacts/mobile/app/(tabs)/ for a similar screen pattern.
-[ ] Every color I will use comes from useColors() — no hardcoded hex.
-[ ] Every font uses fontFamily: "Inter_XXX" — no bare fontWeight.
-[ ] My spacing values come from the established scale (6, 8, 10, 12, 14, 16).
-[ ] My radius comes from the established scale (12, 16, 18, 20) or colors.radius.
-[ ] Icons come from @expo/vector-icons (+ expo-symbols on iOS).
-[ ] State lives in AppContext or PlannerContext, not in component-level useState for shared data.
-[ ] Haptics added on destructive or confirming actions.
+[ ] Every color I will use comes from useTheme() → t.<token> — no hardcoded hex.
+[ ] Every text node uses the TYPE.* ramp — no bare fontWeight or hardcoded fontFamily.
+[ ] Spacing values come from the established scale (4, 8, 14, 22, 36).
+[ ] Radii come from RADII (card=14, small=8, pill=999).
+[ ] Icons are stroke SVGs via react-native-svg (see TabIcon). No SF Symbols / @expo/vector-icons unless infrastructure (Ionicons in ErrorFallback/ConflictToast).
+[ ] State lives in a context (Theme/App/Planner), not in component-level useState for shared data.
+[ ] Server data flows through TanStack Query hooks from @workspace/api-client-react.
+[ ] Haptics added on destructive or confirming actions (PillBtn handles this).
 [ ] Platform branches (iOS / Android / web) handled where applicable.
 [ ] tsc --noEmit passes.
+[ ] Voice swept — no `!`, no blame, error = fact + consequence.
 ```
 
 If any box is unchecked → **stop and fix before continuing**.

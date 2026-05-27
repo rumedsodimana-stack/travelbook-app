@@ -1,0 +1,213 @@
+{
+  "destinationCode": "JP",
+  "name": "Japan",
+  "airports": ["HND", "NRT", "KIX"],
+  "flights": [
+    {
+      "from": "JFK", "to": "HND", "carrier": "JAL", "flightNo": "005",
+      "depTimeLocal": "14:30", "arrTimeLocal": "19:55", "durationMin": 815,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 777-300ER",
+      "meals": true, "wifi": true, "priceUSD": 1180,
+      "tags": ["DIRECT", "DAYTIME", "SAME AIRLINE"]
+    },
+    {
+      "from": "JFK", "to": "HND", "carrier": "ANA", "flightNo": "109",
+      "depTimeLocal": "11:00", "arrTimeLocal": "15:30", "durationMin": 810,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 787-9",
+      "meals": true, "wifi": true, "priceUSD": 1140,
+      "tags": ["DIRECT", "EARLIER", "CHEAPER"]
+    },
+    {
+      "from": "JFK", "to": "NRT", "carrier": "United", "flightNo": "79",
+      "depTimeLocal": "13:50", "arrTimeLocal": "17:25", "durationMin": 820,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 777-200",
+      "meals": true, "wifi": true, "priceUSD": 980,
+      "tags": ["DIRECT", "CHEAPER"]
+    },
+    {
+      "from": "JFK", "to": "HND", "carrier": "JAL", "flightNo": "007",
+      "depTimeLocal": "23:30", "arrTimeLocal": "04:55", "durationMin": 815,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 777-300ER",
+      "meals": true, "wifi": true, "priceUSD": 1080,
+      "tags": ["DIRECT", "RED-EYE", "CHEAPER"]
+    },
+    {
+      "from": "LAX", "to": "HND", "carrier": "ANA", "flightNo": "105",
+      "depTimeLocal": "11:55", "arrTimeLocal": "16:45", "durationMin": 700,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 787-9",
+      "meals": true, "wifi": true, "priceUSD": 920,
+      "tags": ["DIRECT", "DAYTIME"]
+    },
+    {
+      "from": "HND", "to": "JFK", "carrier": "JAL", "flightNo": "006",
+      "depTimeLocal": "22:30", "arrTimeLocal": "22:55", "durationMin": 825,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 777-300ER",
+      "meals": true, "wifi": true, "priceUSD": 1180,
+      "tags": ["DIRECT", "RED-EYE", "SAME AIRLINE"]
+    },
+    {
+      "from": "HND", "to": "JFK", "carrier": "ANA", "flightNo": "110",
+      "depTimeLocal": "17:55", "arrTimeLocal": "17:25", "durationMin": 810,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 787-9",
+      "meals": true, "wifi": true, "priceUSD": 1140,
+      "tags": ["DIRECT", "DAYTIME"]
+    }
+  ],
+  "stays": [
+    {
+      "name": "Aman Tokyo", "address": "1-5-6 Otemachi, Chiyoda, Tokyo",
+      "nightlyUSD": 1850, "view": "Park", "rating": 5, "tags": ["LUXURY"]
+    },
+    {
+      "name": "Park Hyatt Tokyo", "address": "3-7-1-2 Nishi-Shinjuku, Tokyo",
+      "nightlyUSD": 920, "view": "Skyline", "rating": 5, "tags": ["LUXURY"]
+    },
+    {
+      "name": "Hotel Okura Tokyo", "address": "2-10-4 Toranomon, Minato, Tokyo",
+      "nightlyUSD": 540, "view": "Garden", "rating": 4, "tags": ["MID"]
+    },
+    {
+      "name": "Hoshinoya Tokyo", "address": "1-9-1 Otemachi, Chiyoda, Tokyo",
+      "nightlyUSD": 780, "view": "Ryokan-style", "rating": 5, "tags": ["LUXURY", "CULTURAL"]
+    },
+    {
+      "name": "Hotel Gracery Shinjuku", "address": "1-19-1 Kabukicho, Shinjuku, Tokyo",
+      "nightlyUSD": 180, "rating": 3, "tags": ["LEAN", "FAMILY-OK"]
+    },
+    {
+      "name": "Tokyu Stay Aoyama", "address": "2-27-18 Minamiaoyama, Minato, Tokyo",
+      "nightlyUSD": 220, "rating": 4, "tags": ["MID"]
+    },
+    {
+      "name": "The Ritz-Carlton Kyoto", "address": "Kamogawa Nijo-Ohashi Hotori, Kyoto",
+      "nightlyUSD": 1240, "view": "River", "rating": 5, "tags": ["LUXURY"]
+    },
+    {
+      "name": "Hyatt Regency Kyoto", "address": "644-2 Sanjusangendomawari, Higashiyama, Kyoto",
+      "nightlyUSD": 380, "rating": 4, "tags": ["MID", "CULTURAL"]
+    }
+  ],
+  "activities": [
+    {
+      "name": "teamLab Planets", "venue": "Toyosu, Tokyo",
+      "durationMin": 120, "startsTimeLocal": "11:00", "priceUSD": 28,
+      "category": "culture", "tags": ["CULTURAL", "FAMILY-OK"]
+    },
+    {
+      "name": "Tsukiji Outer Market Tour", "venue": "Tsukiji, Tokyo",
+      "durationMin": 180, "startsTimeLocal": "08:00", "priceUSD": 65,
+      "category": "food", "tags": ["FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Senso-ji Temple Visit", "venue": "Asakusa, Tokyo",
+      "durationMin": 120, "startsTimeLocal": "09:30", "priceUSD": 0,
+      "category": "culture", "tags": ["CULTURAL", "LEAN"]
+    },
+    {
+      "name": "Cherry Blossom Walk · Meguro River", "venue": "Naka-Meguro, Tokyo",
+      "durationMin": 90, "startsTimeLocal": "16:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["SLOW", "LEAN"]
+    },
+    {
+      "name": "Sushi-Making Class", "venue": "Shibuya, Tokyo",
+      "durationMin": 150, "startsTimeLocal": "11:30", "priceUSD": 110,
+      "category": "food", "tags": ["FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Fushimi Inari Shrine Hike", "venue": "Kyoto",
+      "durationMin": 180, "startsTimeLocal": "07:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["CULTURAL", "EARLIER"]
+    },
+    {
+      "name": "Arashiyama Bamboo Grove", "venue": "Arashiyama, Kyoto",
+      "durationMin": 120, "startsTimeLocal": "08:30", "priceUSD": 0,
+      "category": "outdoors", "tags": ["CULTURAL", "SLOW"]
+    },
+    {
+      "name": "Onsen Day · Hakone", "venue": "Hakone Yumoto",
+      "durationMin": 300, "startsTimeLocal": "10:00", "priceUSD": 95,
+      "category": "wellness", "tags": ["WELLNESS", "SLOW"]
+    }
+  ],
+  "transit": [
+    {
+      "carrier": "Shinkansen", "service": "Nozomi 17",
+      "fromStation": "Tokyo", "toStation": "Kyoto",
+      "depTimeLocal": "09:00", "arrTimeLocal": "11:14", "durationMin": 134,
+      "priceUSD": 95, "tags": ["DIRECT", "DAYTIME"]
+    },
+    {
+      "carrier": "Shinkansen", "service": "Nozomi 28",
+      "fromStation": "Kyoto", "toStation": "Tokyo",
+      "depTimeLocal": "16:13", "arrTimeLocal": "18:27", "durationMin": 134,
+      "priceUSD": 95, "tags": ["DIRECT", "DAYTIME"]
+    },
+    {
+      "carrier": "Narita Express", "service": "N'EX 5",
+      "fromStation": "Narita Airport", "toStation": "Tokyo",
+      "depTimeLocal": "18:00", "arrTimeLocal": "19:00", "durationMin": 60,
+      "priceUSD": 30, "tags": ["DIRECT"]
+    },
+    {
+      "carrier": "Tokyo Monorail", "service": "Haneda Express",
+      "fromStation": "Haneda Airport", "toStation": "Hamamatsucho",
+      "depTimeLocal": "20:30", "arrTimeLocal": "21:00", "durationMin": 30,
+      "priceUSD": 6, "tags": ["DIRECT", "CHEAPER"]
+    }
+  ],
+  "dining": [
+    {
+      "name": "Sukiyabashi Jiro", "cuisine": "Sushi (omakase)",
+      "venue": "Ginza, Tokyo", "startsTimeLocal": "19:00", "durationMin": 60,
+      "pricePerPersonUSD": 380, "tags": ["LUXURY", "FOOD"]
+    },
+    {
+      "name": "Onibus Coffee", "cuisine": "Coffee & pastries",
+      "venue": "Naka-Meguro, Tokyo", "startsTimeLocal": "08:30", "durationMin": 45,
+      "pricePerPersonUSD": 8, "tags": ["LEAN", "SLOW"]
+    },
+    {
+      "name": "Tonkatsu Maisen", "cuisine": "Japanese (tonkatsu)",
+      "venue": "Aoyama, Tokyo", "startsTimeLocal": "12:30", "durationMin": 60,
+      "pricePerPersonUSD": 22, "tags": ["MID", "FOOD"]
+    },
+    {
+      "name": "Den", "cuisine": "Modern Kaiseki",
+      "venue": "Jingumae, Tokyo", "startsTimeLocal": "19:30", "durationMin": 150,
+      "pricePerPersonUSD": 260, "tags": ["LUXURY", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Ichiran Ramen", "cuisine": "Ramen",
+      "venue": "Shibuya, Tokyo", "startsTimeLocal": "13:00", "durationMin": 30,
+      "pricePerPersonUSD": 12, "tags": ["LEAN", "FOOD", "FAMILY-OK"]
+    },
+    {
+      "name": "Nishiki Market Street Food", "cuisine": "Variety",
+      "venue": "Kyoto", "startsTimeLocal": "12:00", "durationMin": 90,
+      "pricePerPersonUSD": 25, "tags": ["MID", "FOOD", "CULTURAL"]
+    }
+  ],
+  "visa": [
+    {
+      "country": "JP", "type": "tourist", "validityDays": 90,
+      "evisa": true, "priceUSD": 0
+    }
+  ],
+  "insurance": [
+    {
+      "carrier": "World Nomads", "tier": "Explorer",
+      "coverage": "Medical $100k · trip cancel $10k · gear $1k",
+      "priceUSDPerDay": 9, "tags": ["MID"]
+    },
+    {
+      "carrier": "SafetyWing", "tier": "Nomad",
+      "coverage": "Medical $250k · subscription model",
+      "priceUSDPerDay": 5, "tags": ["LEAN"]
+    },
+    {
+      "carrier": "Allianz", "tier": "OneTrip Premier",
+      "coverage": "Medical $100k · trip interrupt $25k · concierge",
+      "priceUSDPerDay": 14, "tags": ["LUXURY"]
+    }
+  ]
+}

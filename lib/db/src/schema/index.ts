@@ -1,20 +1,13 @@
-// Export your models here. Add one export per file
-// export * from "./posts";
-//
-// Each model/table should ideally be split into different files.
-// Each model/table should define a Drizzle table, insert schema, and types:
-//
-//   import { pgTable, text, serial } from "drizzle-orm/pg-core";
-//   import { createInsertSchema } from "drizzle-zod";
-//   import { z } from "zod/v4";
-//
-//   export const postsTable = pgTable("posts", {
-//     id: serial("id").primaryKey(),
-//     title: text("title").notNull(),
-//   });
-//
-//   export const insertPostSchema = createInsertSchema(postsTable).omit({ id: true });
-//   export type InsertPost = z.infer<typeof insertPostSchema>;
-//   export type Post = typeof postsTable.$inferSelect;
+// Every TravelBook table is defined in its own file and re-exported here.
+// Lift shapes from ~/Downloads/design_handoff_travelbook/SPEC.md §4.
 
-export {}
+export * from "./users";
+export * from "./documents";
+export * from "./providers";
+export * from "./passes";
+export * from "./pass_members";
+export * from "./itinerary_items";
+export * from "./alternates";
+export * from "./posts";
+export * from "./buddy_requests";
+export * from "./notifications";

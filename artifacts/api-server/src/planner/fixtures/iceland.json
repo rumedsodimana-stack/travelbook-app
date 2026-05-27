@@ -1,0 +1,126 @@
+{
+  "destinationCode": "IS",
+  "name": "Iceland",
+  "airports": ["KEF"],
+  "flights": [
+    {
+      "from": "JFK", "to": "KEF", "carrier": "Icelandair", "flightNo": "614",
+      "depTimeLocal": "21:00", "arrTimeLocal": "06:30", "durationMin": 330,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 737 MAX 9",
+      "meals": false, "wifi": true, "priceUSD": 540,
+      "tags": ["DIRECT", "RED-EYE"]
+    },
+    {
+      "from": "JFK", "to": "KEF", "carrier": "PLAY", "flightNo": "201",
+      "depTimeLocal": "19:30", "arrTimeLocal": "05:30", "durationMin": 360,
+      "stops": [], "fare": "economy", "aircraft": "Airbus A321neo",
+      "meals": false, "wifi": false, "priceUSD": 320,
+      "tags": ["DIRECT", "RED-EYE", "CHEAPER"]
+    },
+    {
+      "from": "KEF", "to": "JFK", "carrier": "Icelandair", "flightNo": "615",
+      "depTimeLocal": "17:00", "arrTimeLocal": "19:00", "durationMin": 360,
+      "stops": [], "fare": "economy", "aircraft": "Boeing 737 MAX 9",
+      "meals": false, "wifi": true, "priceUSD": 540,
+      "tags": ["DIRECT", "DAYTIME"]
+    }
+  ],
+  "stays": [
+    {
+      "name": "The Retreat at Blue Lagoon", "address": "Norðurljósavegur 11, Grindavík",
+      "nightlyUSD": 1850, "view": "Lagoon", "rating": 5, "tags": ["LUXURY", "WELLNESS"]
+    },
+    {
+      "name": "Hotel Borg", "address": "Pósthússtræti 11, Reykjavík",
+      "nightlyUSD": 380, "view": "Square", "rating": 4, "tags": ["MID", "CULTURAL"]
+    },
+    {
+      "name": "Sandhotel by Keahotels", "address": "Laugavegur 34, Reykjavík",
+      "nightlyUSD": 260, "rating": 4, "tags": ["MID"]
+    },
+    {
+      "name": "ION Adventure Hotel", "address": "Nesjavellir við Þingvallavatn",
+      "nightlyUSD": 540, "view": "Mountains", "rating": 5, "tags": ["LUXURY", "ADVENTURE"]
+    },
+    {
+      "name": "Reykjavík Konsulat Hotel", "address": "Hafnarstræti 17, Reykjavík",
+      "nightlyUSD": 220, "rating": 4, "tags": ["MID"]
+    }
+  ],
+  "activities": [
+    {
+      "name": "Blue Lagoon Soak", "venue": "Grindavík",
+      "durationMin": 240, "startsTimeLocal": "10:00", "priceUSD": 95,
+      "category": "wellness", "tags": ["WELLNESS", "SLOW"]
+    },
+    {
+      "name": "Golden Circle Drive", "venue": "Self-drive · Þingvellir → Geysir → Gullfoss",
+      "durationMin": 480, "startsTimeLocal": "08:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["ADVENTURE", "SLOW"]
+    },
+    {
+      "name": "Northern Lights Tour", "venue": "Outside Reykjavík",
+      "durationMin": 300, "startsTimeLocal": "21:00", "priceUSD": 85,
+      "category": "outdoors", "tags": ["ADVENTURE", "LATER"]
+    },
+    {
+      "name": "Glacier Hike · Sólheimajökull", "venue": "South Coast",
+      "durationMin": 240, "startsTimeLocal": "10:00", "priceUSD": 145,
+      "category": "outdoors", "tags": ["ADVENTURE"]
+    },
+    {
+      "name": "Whale Watching", "venue": "Old Harbour, Reykjavík",
+      "durationMin": 180, "startsTimeLocal": "13:00", "priceUSD": 90,
+      "category": "outdoors", "tags": ["ADVENTURE", "FAMILY-OK"]
+    },
+    {
+      "name": "Reykjadalur Hot Spring Hike", "venue": "Hveragerði",
+      "durationMin": 240, "startsTimeLocal": "11:00", "priceUSD": 0,
+      "category": "outdoors", "tags": ["WELLNESS", "ADVENTURE", "LEAN"]
+    }
+  ],
+  "transit": [
+    {
+      "carrier": "Flybus", "service": "KEF → BSÍ Terminal",
+      "fromStation": "Keflavík Airport", "toStation": "BSÍ Terminal, Reykjavík",
+      "depTimeLocal": "07:00", "arrTimeLocal": "07:45", "durationMin": 45,
+      "priceUSD": 26, "tags": ["DIRECT", "CHEAPER"]
+    },
+    {
+      "carrier": "Hertz", "service": "Rental SUV · 7-day",
+      "fromStation": "KEF Airport", "toStation": "KEF Airport",
+      "depTimeLocal": "07:00", "arrTimeLocal": "07:00", "durationMin": 0,
+      "priceUSD": 580, "tags": ["DIRECT", "ADVENTURE"]
+    }
+  ],
+  "dining": [
+    {
+      "name": "Dill", "cuisine": "New Nordic (1 Michelin)",
+      "venue": "Reykjavík", "startsTimeLocal": "19:00", "durationMin": 180,
+      "pricePerPersonUSD": 180, "tags": ["LUXURY", "FOOD"]
+    },
+    {
+      "name": "Bæjarins Beztu Pylsur", "cuisine": "Hot dogs",
+      "venue": "Reykjavík", "startsTimeLocal": "13:00", "durationMin": 15,
+      "pricePerPersonUSD": 6, "tags": ["LEAN", "FOOD", "CULTURAL"]
+    },
+    {
+      "name": "Matur og Drykkur", "cuisine": "Modern Icelandic",
+      "venue": "Reykjavík", "startsTimeLocal": "19:30", "durationMin": 120,
+      "pricePerPersonUSD": 75, "tags": ["MID", "FOOD"]
+    }
+  ],
+  "visa": [
+    {
+      "country": "IS", "type": "tourist", "validityDays": 90,
+      "evisa": false, "priceUSD": 0
+    }
+  ],
+  "insurance": [
+    {
+      "carrier": "World Nomads", "tier": "Explorer",
+      "coverage": "Medical $100k · adventure-sport add-on (glacier hike)",
+      "priceUSDPerDay": 12, "tags": ["MID", "ADVENTURE"]
+    }
+  ]
+}
